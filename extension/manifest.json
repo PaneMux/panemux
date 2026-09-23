@@ -1,0 +1,77 @@
+{
+  "manifest_version": 3,
+  "name": "PaneMux",
+  "version": "0.4.0",
+  "description": "Vimium, but the browser becomes a modal editor. Navigation, : command bar, Visual mode, macros, tab registers, undo tree, splits, Terminal HUD.",
+  "permissions": [
+    "tabs",
+    "storage",
+    "scripting",
+    "activeTab",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "run_at": "document_idle",
+      "css": [
+        "ui/page.css"
+      ],
+      "js": [
+        "content/settings.js",
+        "content/modes.js",
+        "content/keyHandler.js",
+        "content/fuzzy.js",
+        "ui/hud.js",
+        "ui/modeIndicator.js",
+        "content/scroll.js",
+        "content/linkHints.js",
+        "content/find.js",
+        "content/marks.js",
+        "content/domSelector.js",
+        "content/markdown.js",
+        "content/visualMode.js",
+        "ui/commandPalette.js",
+        "content/tabOverview.js",
+        "content/macro.js",
+        "content/undo.js",
+        "ui/undoPanel.js",
+        "content/commands.js",
+        "content/content.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "ui/hud.css",
+        "ui/fonts/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "options_page": "options/options.html",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "PaneMux",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png"
+    }
+  }
+}
