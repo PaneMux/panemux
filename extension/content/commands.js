@@ -54,6 +54,16 @@
   def("splitCycle", () => splitMsg({ type: "split.cycle" }), { desc: "Focus next split window" });
   def("splitClose", () => splitMsg({ type: "split.close" }), { desc: "Close this split" });
 
+  // gi: focus the first visible text field ({count}gi picks the nth).
+  def("focusInput", ({ count }) => {
+    const fields = [...document.querySelectorAll("input, textarea, [contenteditable=''], [contenteditable='true'], [role=textbox]")]
+      .filter((el) => PaneMux.Dom.isEditable(el) && !el.disabled && el.getClientRects().length && getComputedStyle(el).visibility !== "hidden");
+    const el = fields[Math.min(count, fields.length) - 1];
+    if (!el) { PaneMux.HUD.toast("No text box on this page", { error: true }); return; }
+    el.focus();
+    el.scrollIntoView({ block: "nearest" });
+  }, { desc: "Focus the first text input" });
+
   def("enterInsert", () => PaneMux.Modes.enter("insert"), { desc: "Insert mode (pass keys to the page)" });
 
   def("escape", () => {
@@ -102,5 +112,6 @@
   map(N, "Ww", "splitCycle");
   map(N, "Wc", "splitClose");
   map(N, "i", "enterInsert");
+  map(N, "gi", "focusInput");
   map(N, "<esc>", "escape", { passKey: true }); // pages still get Esc (close their own modals)
 })();
