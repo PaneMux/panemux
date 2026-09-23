@@ -1,0 +1,26 @@
+/* Injected into the page's own document (not the HUD shadow root).
+   @font-face and ::highlight() only work at document level. */
+@font-face {
+  font-family: "PaneMux JetBrains Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("chrome-extension://__MSG_@@extension_id__/ui/fonts/jetbrains-mono-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "PaneMux JetBrains Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("chrome-extension://__MSG_@@extension_id__/ui/fonts/jetbrains-mono-latin-700-normal.woff2") format("woff2");
+}
+
+/* Find-on-page matches (CSS Custom Highlight API, no DOM mutation). */
+::highlight(pmx-find) {
+  background-color: rgba(0, 229, 255, 0.28);
+  color: inherit;
+}
+::highlight(pmx-find-current) {
+  background-color: #00e5ff;
+  color: #0a0a0f;
+}
