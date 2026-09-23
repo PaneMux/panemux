@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Form test page</title>
+<style>body{margin:0;padding:20px;font:16px/1.5 Georgia,serif} label{display:block;margin:6px 0}</style>
+</head>
+<body>
+<form onsubmit="return false">
+  <label>Name <input id="name" type="text" value="alice"></label>
+  <label>Bio <textarea id="bio">hello</textarea></label>
+  <label>Color <select id="color"><option>red</option><option>green</option><option>blue</option></select></label>
+  <label><input id="agree" type="checkbox"> Agree</label>
+  <label>Secret <input id="pw" type="password"></label>
+</form>
+<p id="p1">Paragraph one.</p>
+<p id="p2">Paragraph two.</p>
+<script>
+  // Mirror of what a framework would see: every input event.
+  window.inputEvents = 0;
+  document.addEventListener("input", () => window.inputEvents++);
+</script>
+</body>
+</html>

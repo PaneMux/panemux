@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Long test page</title>
+<style>
+  body { margin: 0; font: 16px/1.6 Georgia, serif; width: 3000px; }
+  section { height: 900px; padding: 20px; border-bottom: 1px solid #ccc; }
+  #top-links a, #top-links button { margin-right: 12px; }
+  #scroller { width: 300px; height: 150px; overflow: auto; border: 1px solid #999; }
+  #scroller div { height: 1000px; }
+</style>
+</head>
+<body>
+  <section id="s1">
+    <h1>Section one</h1>
+    <div id="top-links">
+      <a id="link-page2" href="page2.html">Go to page two</a>
+      <a id="link-blank" href="page2.html?new">Page two (new tab)</a>
+      <button id="btn" onclick="this.textContent = 'clicked ' + (++window.clicks || (window.clicks = 1))">Click me</button>
+      <input id="text-input" type="text" placeholder="type here">
+      <span id="js-click" style="cursor:pointer" onclick="this.dataset.clicked = 'yes'">JS span</span>
+    </div>
+    <p>The quick brown fox jumps over the lazy dog. Needle alpha is here.</p>
+    <p>Split <b>nee</b>dle across inline tags.</p>
+    <p id="keylog"></p>
+  </section>
+  <section id="s2"><h2>Section two</h2><p>Needle beta lives in section two.</p></section>
+  <section id="s3"><h2>Section three</h2><p>Needle gamma lives in section three.</p>
+    <p>Uppercase NEEDLE only matches smartcase queries.</p></section>
+  <section id="s4"><h2>Section four</h2><p>The end.</p></section>
+  <script>
+    // Records keys that reach the page so tests can check pass-through.
+    window.pageKeys = [];
+    window.addEventListener("keydown", (e) => window.pageKeys.push(e.key));
+  </script>
+</body>
+</html>

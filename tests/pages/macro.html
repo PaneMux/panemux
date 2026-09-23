@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Macro test page</title>
+<style>body{margin:0;padding:20px;font:16px/1.5 Georgia,serif;height:4000px} a,button,input{margin-right:10px}</style>
+</head>
+<body>
+<div id="extra"></div>
+<p>
+  <a id="to-page2" href="page2.html">page two</a>
+  <button id="counter" onclick="this.dataset.n = (+this.dataset.n || 0) + 1; this.textContent = 'count ' + this.dataset.n">count 0</button>
+  <input id="field" type="text">
+  <textarea id="area"></textarea>
+</p>
+<script>
+  // ?extra=N adds N links before the real ones, so every hint label shifts.
+  const n = +new URLSearchParams(location.search).get("extra") || 0;
+  for (let i = 0; i < n; i++) {
+    const a = document.createElement("a");
+    a.href = "#x" + i; a.textContent = "decoy " + i;
+    document.getElementById("extra").appendChild(a);
+  }
+</script>
+</body>
+</html>

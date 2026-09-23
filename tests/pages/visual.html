@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Visual test page</title>
+<style>body{margin:0;padding:20px;font:16px/1.5 Georgia,serif} section{margin:20px 0;padding:10px;border:1px dashed #ccc} #tall{height:1500px}</style>
+</head>
+<body>
+<article id="art">
+  <h1 id="title">Article <em>title</em></h1>
+  <section id="sec1">
+    <p id="p1">First <strong>bold</strong> para with <a href="/page2.html">a link</a> and <code>code()</code>.</p>
+    <p id="p2">Second para.</p>
+    <ul id="list"><li>One</li><li>Two<ul><li>Nested</li></ul></li></ul>
+    <pre><code class="language-js">const x = 1;
+</code></pre>
+    <blockquote><p>Quote</p></blockquote>
+    <table><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></table>
+    <script>/* ignored */</script>
+    <p style="display:none">hidden text</p>
+  </section>
+  <section id="sec2"><p id="p3">Third.</p></section>
+</article>
+<div id="tall"></div>
+<script>
+  window.pageKeys = [];
+  window.addEventListener("keydown", (e) => window.pageKeys.push(e.key));
+</script>
+</body>
+</html>
