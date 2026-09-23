@@ -30,7 +30,10 @@ PaneMux.Undo = (() => {
       type: "undo.push", kind: "hide", label: `hide ${PaneMux.DomSelector.describe(el)}`,
       data: { desc: PaneMux.DomSelector.descriptor(el), value: prev.value, priority: prev.priority },
     });
-    if (r) remember(r.id, el);
+    if (r) {
+      remember(r.id, el);
+      undoToast(`Hid ${PaneMux.DomSelector.describe(el)}`, r.id);
+    }
   }
 
   function setHidden(el, hidden, data) {
@@ -107,7 +110,18 @@ PaneMux.Undo = (() => {
     }
   }
 
+  // "Closed 3 tabs — Undo": a mouse-clickable way out for people who don't
+  // trust the keyboard yet, plus the key hint for when they do.
+  function undoToast(message, id) {
+    const hint = PaneMux.Features.enabled("undo") && PaneMux.Settings.get("uKey") !== "scroll" ? "or press u" : "";
+    PaneMux.HUD.toast(message, {
+      action: { label: "Undo", run: async () => report(await bg({ type: "undo.revert", id })) },
+      hint,
+    });
+  }
+
   chrome.runtime.onMessage.addListener((msg, sender, reply) => {
+    if (msg && msg.type === "undo.toast") { undoToast(msg.message, msg.id); return; }
     if (msg && msg.type === "undo.apply") {
       try { apply(msg); reply({ ok: true }); } catch (e) { reply({ ok: false, error: e.message }); }
     }

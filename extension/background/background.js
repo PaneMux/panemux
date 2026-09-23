@@ -4,6 +4,7 @@ import { listCommands, execute } from "./commandRegistry.js";
 import { setRegister, setTabRegister, getTabRegister } from "./registers.js";
 import * as Undo from "./undoService.js";
 import { setupToolbar, stateFor, togglePause } from "./toolbar.js";
+import * as Safety from "./safety.js";
 import { focusDirection, cycle as cycleSplit, closeSplit } from "./splits.js";
 import { startRecording, stopRecording, recordStep, recordKey, playMacro, activeTab } from "./macroRecorder.js";
 
@@ -44,6 +45,7 @@ const handlers = {
   "undo.redo": ({ count }) => Undo.redo(count || 1),
   "undo.step": ({ delta }) => Undo.step(delta),
   "undo.goto": ({ id }) => Undo.gotoNode(id),
+  "undo.revert": ({ id }) => Undo.revert(id),
   async "undo.view"() {
     return { ok: true, ...(await Undo.view()) };
   },
@@ -86,9 +88,15 @@ const handlers = {
   async "tabs.activate"({ tabId }) {
     await chrome.tabs.update(tabId, { active: true });
   },
-  async "tabs.close"({ tabIds }) {
-    await chrome.tabs.remove(tabIds);
+  // Closes from the tab overview: same preview + undo toast as :tabdo close.
+  async "tabs.close"({ tabIds }, sender) {
+    const tabs = (await Promise.all(tabIds.map((id) => chrome.tabs.get(id).catch(() => null)))).filter(Boolean);
+    return { ok: true, ...(await Safety.closeTabs(tabs, { describe: "from the tab list", notifyTabId: sender.tab.id })) };
   },
+  async "close.confirm"({ id }) {
+    try { return { ok: true, ...(await Safety.confirm(id)) }; } catch (e) { return { ok: false, error: e.message }; }
+  },
+  "close.cancel": ({ id }) => ({ ok: true, ...Safety.cancel(id) }),
   async "treg.yank"({ name, tabIds }) {
     const tabs = (await Promise.all(tabIds.map((id) => chrome.tabs.get(id).catch(() => null)))).filter(Boolean);
     const entry = await setTabRegister(name, tabs);

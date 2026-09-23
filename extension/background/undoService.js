@@ -43,6 +43,11 @@ export function push(kind, label, data) {
 // onRemoved doesn't say what the tab was, so keep a cache of tab info.
 const cache = new Map();
 const suppress = new Set(); // tab ids we close ourselves (redo of a close)
+const expected = new Map(); // tab id -> tab to notify with an undo toast (closes PaneMux did)
+
+export function expectCloses(tabIds, notifyTabId) {
+  for (const id of tabIds) expected.set(id, notifyTabId);
+}
 let pendingClose = [];
 let closeTimer = null;
 
@@ -60,12 +65,29 @@ async function initCache() {
   persistCache();
 }
 
-function flushCloses() {
-  const tabs = pendingClose.filter((t) => t.url && !/^(chrome|edge|about|devtools):/.test(t.url));
+async function flushCloses() {
+  const batch = pendingClose;
   pendingClose = [];
+  const tabs = batch.filter((t) => t.url && !/^(chrome|edge|about|devtools):/.test(t.url));
   if (!tabs.length) return;
   const label = tabs.length === 1 ? `close ${tabs[0].title || tabs[0].url}` : `close ${tabs.length} tabs`;
-  push("close", label, { tabs });
+  const id = await push("close", label, { tabs: tabs.map(({ notify, ...t }) => t) });
+  // Closes PaneMux did itself get a toast with an Undo button on the page that asked.
+  const notify = batch.map((t) => t.notify).find((n) => n !== undefined);
+  if (notify !== undefined) {
+    const message = tabs.length === 1 ? `Closed "${tabs[0].title || tabs[0].url}"` : `Closed ${tabs.length} tabs`;
+    toast(notify, { type: "undo.toast", id, message });
+  }
+}
+
+// Prefer the tab that asked; if it was one of the closed ones, the active tab.
+async function toast(tabId, msg) {
+  try {
+    await chrome.tabs.sendMessage(tabId, msg);
+  } catch (e) {
+    const [active] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    if (active) chrome.tabs.sendMessage(active.id, msg).catch(() => {});
+  }
 }
 
 export function watchTabs() {
@@ -78,8 +100,10 @@ export function watchTabs() {
     const t = cache.get(id);
     cache.delete(id);
     persistCache();
+    const notify = expected.get(id);
+    expected.delete(id);
     if (suppress.delete(id) || info.isWindowClosing || !t) return;
-    pendingClose.push(t);
+    pendingClose.push({ ...t, notify });
     clearTimeout(closeTimer);
     closeTimer = setTimeout(flushCloses, CLOSE_BATCH_MS);
   });
@@ -153,3 +177,12 @@ export const redo = (count) => run((t) => t.redo(count), "Already at newest chan
 export const step = (delta) => run((t) => t.step(delta), delta < 0 ? "Already at oldest change" : "Already at newest change");
 export const gotoNode = (id) => run((t) => t.goto(id), "Already there");
 export const view = () => serial(async () => (await load()).view());
+
+// Toast "Undo" button: undo that one action, only if nothing happened since.
+export async function revert(id) {
+  await load();
+  if (tree.cur !== id) {
+    return { ok: true, error: true, message: "Other changes happened since — press U to see the undo tree" };
+  }
+  return undo(1);
+}

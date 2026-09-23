@@ -119,8 +119,7 @@ PaneMux.VisualMode = (() => {
     const prev = { value: el.style.getPropertyValue("display"), priority: el.style.getPropertyPriority("display") };
     PaneMux.Undo.setHidden(el, true);
     PaneMux.Undo.recordHide(el, prev);
-    select(nextSel);
-    PaneMux.HUD.toast(`Hid ${Sel.describe(el)} — u to restore`);
+    select(nextSel); // recordHide shows the "Hid … — Undo" toast
   }
 
   async function yank() {
