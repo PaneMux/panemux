@@ -144,3 +144,14 @@ test("normalize", () => {
   assert.equal(JSON.stringify(PaneMux.Keys.parseKeys("<C-w>h")), JSON.stringify(["<c-w>", "h"]));
   assert.equal(PaneMux.Keys.parseKeys("gT").join(","), "g,T");
 });
+
+test("filtered-out bindings pass to the page; prefixes with no usable child too", () => {
+  PaneMux.Keys.map("normal", "gx", "tab");
+  PaneMux.Keys.setFilter((b) => b.command !== "tab");
+  assert.deepEqual(feed("g", "x"), [true, true]);           // gg is live so g waits; hidden gx ends the sequence (swallowed)
+  assert.equal(calls.length, 0);
+  assert.deepEqual(feed("j"), [true]);                     // unrelated keys unaffected
+  PaneMux.Keys.setFilter((b) => b.command === "mark");
+  assert.deepEqual(feed("g"), [false]);                    // nothing under g is usable any more
+  PaneMux.Keys.setFilter(() => true);
+});
