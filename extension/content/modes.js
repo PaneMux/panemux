@@ -12,18 +12,18 @@ PaneMux.Modes = (() => {
   let handler = null;
 
   function register(name, info) {
-    registry[name] = { name, label: name.toUpperCase(), color: "#39ff14", ...info };
+    registry[name] = { name, label: name, color: "var(--mode-normal)", ...info };
   }
 
-  // Colors come from the spec's Terminal HUD table.
-  register("normal",   { label: "NOR", color: "#39ff14" });
-  register("insert",   { label: "INS", color: "#ff9500", passThrough: true });
-  register("visual",   { label: "VIS", color: "#ff2eb0" });
-  register("command",  { label: "CMD", color: "#00e5ff" });
-  register("operator", { label: "OPR", color: "#ffe600" });
-  register("hints",    { label: "HNT", color: "#39ff14" });
-  register("find",     { label: "FND", color: "#00e5ff" });
-  register("tabs",     { label: "TAB", color: "#b388ff" });
+  // Accents come from the design system tokens (ui/tokens.css).
+  register("normal",   { label: "Normal",  color: "var(--mode-normal)" });
+  register("insert",   { label: "Insert",  color: "var(--mode-insert)", passThrough: true });
+  register("visual",   { label: "Visual",  color: "var(--mode-visual)" });
+  register("command",  { label: "Command", color: "var(--mode-command)" });
+  register("operator", { label: "Operator", color: "var(--mode-operator)" });
+  register("hints",    { label: "Hints",   color: "var(--mode-normal)" });
+  register("find",     { label: "Find",    color: "var(--mode-command)" });
+  register("tabs",     { label: "Tabs",    color: "var(--mode-command)" });
 
   // Enter `name`. `modeHandler` (optional) = { onKey(key, event) -> "handled" | "pass" | undefined, onExit() }
   function enter(name, modeHandler = null) {
@@ -57,6 +57,9 @@ PaneMux.Dom = {
   isEditable(el) {
     if (!el || el === document.body || el === document.documentElement) return false;
     if (el.isContentEditable) return true;
+    // ARIA text widgets built from divs (rich editors, custom search boxes)
+    const role = el.getAttribute && el.getAttribute("role");
+    if ((role === "textbox" || role === "searchbox") && el.getAttribute("aria-readonly") !== "true") return true;
     const tag = el.tagName;
     if (tag === "TEXTAREA" || tag === "SELECT") return true;
     if (tag === "INPUT") {

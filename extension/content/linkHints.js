@@ -131,7 +131,7 @@ PaneMux.LinkHints = (() => {
     }
     const k = key.length === 1 ? key.toLowerCase() : null;
     if (!k || !session.hints.some((h) => h.label.startsWith(session.typed + k))) {
-      return "handled"; // swallow stray keys while hints are up
+      return "ignored"; // swallow stray keys while hints are up
     }
     session.typed += k;
     const matches = session.hints.filter((h) => h.label.startsWith(session.typed));
