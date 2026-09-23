@@ -63,12 +63,12 @@ PaneMux.Undo = (() => {
   const isCheck = (el) => el.tagName === "INPUT" && el.type === "checkbox";
   const snapshot = (el) => (isCheck(el) ? el.checked : el.value);
 
-  document.addEventListener("focusin", (e) => {
+  if (!PaneMux.registryOnly) document.addEventListener("focusin", (e) => {
     const el = e.composedPath()[0];
     if (trackable(el) && !committed.has(el)) committed.set(el, snapshot(el));
   }, true);
 
-  document.addEventListener("change", (e) => {
+  if (!PaneMux.registryOnly) document.addEventListener("change", (e) => {
     if (applying) return;
     const el = e.composedPath()[0];
     if (!trackable(el)) return;

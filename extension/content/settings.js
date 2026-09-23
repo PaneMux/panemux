@@ -1,5 +1,7 @@
 // Shared namespace for all PaneMux content-script modules. Content scripts
 // share one isolated world per frame, so plain globals are private to us.
+// (The options page sets PaneMux.registryOnly first: it loads these modules
+// just to read the command/key registry, without touching its own page.)
 window.PaneMux = window.PaneMux || {};
 
 PaneMux.Settings = (() => {

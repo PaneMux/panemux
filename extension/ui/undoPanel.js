@@ -141,7 +141,7 @@ PaneMux.UndoPanel = (() => {
   try {
     chrome.storage.local.get("undoPanel", (r) => {
       if (r && r.undoPanel) state = { ...state, ...r.undoPanel };
-      if (state.open) show();
+      if (state.open && !PaneMux.registryOnly) show();
     });
   } catch (e) {}
 
