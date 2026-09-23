@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+*.zip
+*.crx
+*.pem
+
+# test artifacts
+test-results/
+playwright-report/
+blob-report/
+.pw-profile*/
+
+# logs
+*.log
+npm-debug.log*
+
+# editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
