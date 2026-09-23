@@ -3,7 +3,7 @@
 import { listCommands, execute } from "./commandRegistry.js";
 import { setRegister, setTabRegister, getTabRegister } from "./registers.js";
 import * as Undo from "./undoService.js";
-import { setupToolbar, stateFor, togglePause } from "./toolbar.js";
+import { setupToolbar, stateFor, togglePause, openTutorial } from "./toolbar.js";
 import * as Safety from "./safety.js";
 import { focusDirection, cycle as cycleSplit, closeSplit } from "./splits.js";
 import { startRecording, stopRecording, recordStep, recordKey, playMacro, activeTab } from "./macroRecorder.js";
@@ -208,5 +208,10 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
 });
 
 setupToolbar();
+
+// First install: open the interactive tutorial (never on updates).
+chrome.runtime.onInstalled.addListener(({ reason }) => {
+  if (reason === "install") openTutorial();
+});
 
 Undo.watchTabs();
