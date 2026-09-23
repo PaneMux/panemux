@@ -1,0 +1,54 @@
+/* PaneMux design tokens — the single source of truth for HUD visuals
+   (see panemux-design-system.md). Scoped so it works both inside the HUD's
+   shadow root (:host) and on extension pages (options, tutorial) via :root. */
+:root[data-panemux-theme],
+:host([data-panemux-theme]) {
+  /* surfaces */
+  --surface-base: #0B0B0F;
+  --surface-raised: #16161C;
+  --border-subtle: #2A2A33;
+  --text-primary: #E4E4E7;
+  --text-muted: #8A8A94;
+
+  /* mode accents */
+  --mode-normal: #34D399;
+  --mode-insert: #FBBF24;
+  --mode-visual: #A78BFA;
+  --mode-command: #38BDF8;
+  --mode-operator: #FB7185;
+  --danger: #F87171;
+
+  /* the current mode's accent; the HUD sets this on mode change */
+  --mode: var(--mode-normal);
+
+  /* type */
+  --font-ui: "PaneMux Inter", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "PaneMux JetBrains Mono", "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-md: 15px;
+  --text-lg: 20px;
+
+  /* elevation & shape */
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --radius-sm: 10px;
+  --radius-lg: 14px;
+
+  /* motion */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur: 150ms;
+  --dur-slow: 180ms;
+
+  /* layout */
+  --strip-height: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-panemux-theme],
+  :host([data-panemux-theme]) {
+    --dur-fast: 0ms;
+    --dur: 0ms;
+    --dur-slow: 0ms;
+  }
+}
