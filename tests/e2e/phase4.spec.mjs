@@ -149,7 +149,7 @@ test.describe("undo tree", () => {
     const opts = await context.newPage();
     await opts.goto(`chrome-extension://${extensionId}/options/options.html`);
     await opts.selectOption("#uKey", "scroll");
-    await expect(opts.locator("#status")).toHaveText("✓ saved");
+    await expect(opts.locator("#status")).toHaveText("Saved");
     await opts.close();
     await open(page);
     const half = await page.evaluate(() => innerHeight / 2);
