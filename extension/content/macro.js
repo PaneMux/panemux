@@ -13,13 +13,10 @@ PaneMux.Macro = (() => {
   // "find", "ex"), or that are macro control themselves.
   const SKIP = new Set(["macroRecord", "linkHints", "linkHintsNewTab", "find", "commandBar", "visualPick", "visualEnter"]);
 
-  // ---- REC badge -----------------------------------------------------------
-  const badge = PaneMux.HUD.el("div", "rec panel");
-  badge.hidden = true;
+  // ---- REC indicator (right side of the status strip) -------------------------
   function setRecording(rec) {
     recording = rec ? { reg: rec.reg } : null;
-    badge.hidden = !recording;
-    badge.textContent = recording ? `REC @${recording.reg}` : "";
+    PaneMux.ModeIndicator.setStatus("rec", recording ? `REC @${recording.reg}` : "", "rec");
   }
   try {
     chrome.storage.local.get("macroRecording", (r) => setRecording(r && r.macroRecording));

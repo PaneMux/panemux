@@ -12,29 +12,26 @@ const hintFor = (page, selector) =>
   }, selector);
 
 test.describe("HUD", () => {
-  test("mode orb glows green in Normal, uses JetBrains Mono", async ({ page }) => {
+  test("status strip shows Normal with an emerald dot; fonts load", async ({ page }) => {
     await open(page);
-    await page.waitForTimeout(300);
-    const s = await hud(page, (root) => {
-      const orb = root.querySelector(".orb");
-      const cs = getComputedStyle(orb);
-      return { text: orb.textContent, color: cs.color, font: cs.fontFamily, right: cs.right, bottom: cs.bottom };
-    });
-    expect(s.text).toBe("NOR");
-    expect(s.color).toBe("rgb(57, 255, 20)");
-    expect(s.font).toContain("PaneMux JetBrains Mono");
-    expect(s.right).toBe("18px");
-    expect(await page.evaluate(async () => { await document.fonts.load('700 12px "PaneMux JetBrains Mono"'); return document.fonts.check('700 12px "PaneMux JetBrains Mono"'); })).toBe(true);
+    await expect.poll(() => hud(page, (root) => {
+      const strip = root.querySelector(".strip");
+      return { label: strip.querySelector(".label").textContent, dot: getComputedStyle(strip.querySelector(".dot")).backgroundColor, font: getComputedStyle(strip).fontFamily };
+    })).toEqual({ label: "Normal", dot: "rgb(52, 211, 153)", font: expect.stringContaining("PaneMux Inter") });
+    expect(await page.evaluate(async () => {
+      await Promise.all(['500 11px "PaneMux Inter"', '700 12px "PaneMux JetBrains Mono"'].map((f) => document.fonts.load(f)));
+      return document.fonts.check('500 11px "PaneMux Inter"') && document.fonts.check('700 12px "PaneMux JetBrains Mono"');
+    })).toBe(true);
   });
 
-  test("orb pulses and recolors on mode switch", async ({ page }) => {
+  test("indicator emphasises and recolors on mode switch", async ({ page }) => {
     await open(page);
     await page.keyboard.press("i");
     expect(await mode(page)).toBe("insert");
-    const s = await hud(page, (root) => ({ pulse: root.querySelector(".orb").classList.contains("pulse"), color: getComputedStyle(root.querySelector(".orb")).borderTopColor, label: root.querySelector(".orb").textContent }));
-    expect(s.pulse).toBe(true);
-    expect(s.label).toBe("INS");
-    await expect.poll(() => hud(page, (root) => getComputedStyle(root.querySelector(".orb")).borderTopColor)).toBe("rgb(255, 149, 0)");
+    const s = await hud(page, (root) => ({ changed: root.querySelector(".strip").classList.contains("changed"), label: root.querySelector(".strip .label").textContent }));
+    expect(s).toEqual({ changed: true, label: "Insert" });
+    await expect.poll(() => hud(page, (root) => getComputedStyle(root.querySelector(".strip .dot")).backgroundColor)).toBe("rgb(251, 191, 36)");
+    await expect.poll(() => hud(page, (root) => root.querySelector(".strip").classList.contains("changed"))).toBe(false);
     await page.keyboard.press("Escape");
     expect(await mode(page)).toBe("normal");
   });
