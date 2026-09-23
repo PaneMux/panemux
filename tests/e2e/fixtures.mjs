@@ -24,6 +24,11 @@ export const test = base.extend({
       args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`, "--screen-info={1600x1000}"],
     });
     await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin: BASE });
+    // A fresh install opens the tutorial; most specs don't want it.
+    const tutorial = context.pages().find((p) => p.url().includes("/tutorial/")) ||
+      (await context.waitForEvent("page", { predicate: (p) => p.url().includes("/tutorial/"), timeout: 5000 }).catch(() => null));
+    context.pmxTutorialUrl = tutorial ? tutorial.url() : null; // for tutorial.spec
+    if (tutorial) await tutorial.close();
     await use(context);
     await context.close();
     fs.rmSync(userDataDir, { recursive: true, force: true });
@@ -41,7 +46,7 @@ export const test = base.extend({
     await use(serviceWorker.url().split("/")[2]);
   },
   page: async ({ context, serviceWorker }, use) => {
-    const page = context.pages()[0] || (await context.newPage());
+    const page = context.pages().find((p) => !p.url().startsWith("chrome-extension://")) || (await context.newPage());
     await use(page);
   },
 });
