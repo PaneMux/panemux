@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en" data-panemux-theme>
+<head>
+  <meta charset="utf-8">
+  <title>Welcome to PaneMux</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../ui/tokens.css">
+  <link rel="stylesheet" href="tutorial.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><span class="dot"></span> PaneMux</div>
+    <button id="skip" class="ghost" type="button">Skip tutorial</button>
+  </header>
+
+  <main>
+    <section class="card" id="card" aria-live="polite">
+      <ol class="progress" id="progress"></ol>
+      <h1 id="step-title">Welcome</h1>
+      <p id="step-text"></p>
+      <p class="try" id="step-try"></p>
+      <p class="done" id="step-done" hidden></p>
+      <div class="actions" id="finish" hidden>
+        <button id="open-settings" type="button">Open settings</button>
+        <button id="close" class="ghost" type="button">Close</button>
+      </div>
+    </section>
+
+    <!-- The mock page the steps act on -->
+    <section class="mock" aria-label="Practice page">
+      <article class="article" id="article">
+        <h2>A page to practise on</h2>
+        <p>PaneMux lets you use the web from the keyboard. Keys do nothing strange while you're typing in a box —
+          the moment you click into one, PaneMux steps aside until you press <kbd>Esc</kbd>.</p>
+        <p>This article is long on purpose, so there's something to scroll. Keep going with <kbd>j</kbd>.</p>
+        <nav class="links">
+          <a href="#one" data-demo>A link</a>
+          <a href="#two" data-demo>Another link</a>
+          <a href="#next" id="lesson-link" data-demo>Open the next lesson</a>
+          <a href="#three" data-demo>One more</a>
+        </nav>
+        <label class="field">Say hello:
+          <input id="practice-input" type="text" placeholder="Type here">
+        </label>
+        <div class="filler">
+          <p>Scrolling works on any page: <kbd>j</kbd> down, <kbd>k</kbd> up, <kbd>h</kbd> and <kbd>l</kbd> sideways,
+            <kbd>d</kbd> and <kbd>u</kbd> for half a screen, <kbd>g</kbd><kbd>g</kbd> to the top, <kbd>G</kbd> to the bottom.</p>
+          <p>Link hints (<kbd>f</kbd>) put letters on everything clickable. Type the letters and PaneMux clicks it for you.
+            <kbd>F</kbd> opens the link in a new tab instead.</p>
+          <p>Search the page with <kbd>/</kbd>, then <kbd>n</kbd> and <kbd>N</kbd> to hop between matches.</p>
+          <p>Go back and forward with <kbd>H</kbd> and <kbd>L</kbd>. Switch tabs with <kbd>J</kbd> and <kbd>K</kbd>.</p>
+          <p>And whenever you forget, <kbd>?</kbd> shows every key.</p>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <!-- PaneMux's own content scripts, loaded straight into this extension page
+       (extension pages don't get content scripts injected). -->
+  <script src="../content/settings.js"></script>
+  <script src="../content/modes.js"></script>
+  <script src="../content/keyHandler.js"></script>
+  <script src="../content/features.js"></script>
+  <script src="../content/fuzzy.js"></script>
+  <script src="../ui/hud.js"></script>
+  <script src="../ui/modeIndicator.js"></script>
+  <script src="../ui/keystrokeTrail.js"></script>
+  <script src="../content/scroll.js"></script>
+  <script src="../content/linkHints.js"></script>
+  <script src="../content/find.js"></script>
+  <script src="../content/marks.js"></script>
+  <script src="../content/domSelector.js"></script>
+  <script src="../content/markdown.js"></script>
+  <script src="../content/visualMode.js"></script>
+  <script src="../ui/preview.js"></script>
+  <script src="../ui/commandPalette.js"></script>
+  <script src="../content/tabOverview.js"></script>
+  <script src="../content/macro.js"></script>
+  <script src="../content/undo.js"></script>
+  <script src="../ui/undoPanel.js"></script>
+  <script src="../ui/help.js"></script>
+  <script src="../content/commands.js"></script>
+  <script src="../content/nudges.js"></script>
+  <script src="../content/content.js"></script>
+  <script src="tutorial.js"></script>
+</body>
+</html>
