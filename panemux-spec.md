@@ -6,22 +6,26 @@ No AI backend. Everything below runs on plain JS pattern-matching and DOM manipu
 
 ---
 
-## 1. Design Direction — "Terminal HUD"
+## 1. Design Direction
 
-The whole extension looks like a hacking terminal laid over the real page, not a toolbar.
+> **Superseded.** The original "Terminal HUD" look (neon glow, a big mode orb, CRT scanlines, skewed
+> glitch animations) has been replaced. **`panemux-design-system.md` is the source of truth for all HUD
+> visuals**, and **`panemux-ux-guidelines.md` for onboarding, defaults and safety UX.** Summary:
 
 | Element | Look |
 |---|---|
-| Font | JetBrains Mono / Fira Code everywhere in the UI |
-| Base panel | `rgba(10,10,15,0.92)` + backdrop-blur, 1px border glowing in the current mode's color |
-| Mode colors | Normal = green `#39ff14`, Insert = orange `#ff9500`, Visual = magenta `#ff2eb0`, Command = cyan `#00e5ff`, Operator-pending = yellow `#ffe600` |
-| Mode orb | Fixed bottom-right circular badge showing current mode; pulses on every mode switch |
-| Keystroke trail | Bottom-left pill stack showing your last ~6 keypresses, fading out after ~1.5s (this is the "combo counter") |
-| Command palette | Opens center-top with a quick glitch-in animation (skew + fade, ~150ms), not a plain dropdown |
-| Scanline overlay | Optional CRT scanline texture (`repeating-linear-gradient`), toggle in options |
-| Minimap (stretch) | Collapsed sidebar showing the page's heading/section structure as a mini outline, click to jump |
+| Surfaces | Layered dark surfaces (`--surface-base` `#0B0B0F`, `--surface-raised` `#16161C`), 1px `--border-subtle` hairlines, a soft shadow instead of glow |
+| Type | Inter for UI chrome, JetBrains Mono for keys and commands; 11 / 13 / 15 / 20px |
+| Mode accents | Normal emerald `#34D399`, Insert amber `#FBBF24`, Visual violet `#A78BFA`, Command sky `#38BDF8`, Operator-pending rose `#FB7185` |
+| Mode indicator | A 24px status strip on the bottom edge with reserved page space; falls back to a 64×24 corner pill (55% opacity at rest) when a site owns the bottom edge |
+| Keystroke trail | Bottom-left monospace chips that fade and drift up over 1.2s |
+| Command palette | ~15% from the top, max 560px wide, fade + scale in over 150ms. No skew, no glitch |
+| Motion | 120–180ms ease-out, fade + scale only; everything off under `prefers-reduced-motion` |
+| Scanlines | Opt-in easter egg in settings, off by default |
+| Click-through | The HUD root is a zero-size, `pointer-events: none` box; only interactive panels take pointer events |
+| Minimap (stretch) | Collapsed outline of the page's headings, click to jump |
 
-Everything is togglable in options for people who just want plain Vimium behavior.
+Everything stays togglable: the **Classic** preset (default for new installs) is plain Vimium behaviour.
 
 ---
 
@@ -71,6 +75,12 @@ Everything is togglable in options for people who just want plain Vimium behavio
 | `:map` / `:unmap` | User key remapping, persisted and synced | both |
 
 **Key conflicts, resolved:** the Tier 1 undo tree wants `u`, which Tier 0 gives to half-page up. Vim wins by default (`u` = undo, `<C-u>` = half page up) with an Options switch back to Vimium behaviour. Tridactyl's `d` (close tab) and `W` (new window) are *not* adopted: `d` stays half-page down and is the future delete operator, `W` is the split prefix. Vimium's `T` (tab search) becomes the tab-register overview, which lists every tab in the window (fuzzy filtering in it is a good follow-up).
+
+### Presets
+
+New installs start on **Classic** (Tier 0 only). **Power User** turns on everything in Tier 1; **Custom**
+picks features one by one (see `panemux-ux-guidelines.md` §2). Keys belonging to a switched-off feature
+aren't bound at all, so they reach the page untouched.
 
 ### Tier 1 — The New Stuff
 
@@ -145,33 +155,39 @@ Everything is togglable in options for people who just want plain Vimium behavio
 
 ## 3. Technical Architecture
 
-**Manifest V3**, permissions: `tabs`, `storage`, `scripting`, `activeTab`, `windows` (for splits).
+**Manifest V3**, permissions: `tabs`, `storage`, `scripting`, `activeTab`, `clipboardWrite`, `contextMenus`
+(splits use `chrome.windows`, which needs no permission of its own).
 
 ```
-panemux/
+extension/
   manifest.json
   background/
-    background.js        // service worker: tab ops, window/split management, sync storage
-    commandRegistry.js    // ex-command name -> handler function map
-    registers.js          // named registers: text + tab groups
-    macroRecorder.js       // record/replay key+action sequences
-    undoTree.js            // tree structure of session actions
+    background.js         // service worker: message router, tabs, global marks
+    commandRegistry.js     // ex-command name -> handler map (fuzzy-matched in the page)
+    registers.js           // named registers: text + tab groups (synced in <8KB chunks)
+    macroRecorder.js        // record/replay steps across tabs and page loads
+    undoTree.js             // the branching undo tree (pure data structure)
+    undoService.js          // feeds the tree: closed tabs, hides, form edits; applies undo/redo
+    splits.js               // :sp / :vsp as tiled windows, W h/j/k/l, W c
+    safety.js               // previews before closing 2+ tabs
+    toolbar.js              // on / off / paused-for-this-site button, menu, shortcut
   content/
-    content.js            // injected on document_idle, all URLs
-    keyHandler.js          // FSM: parses counts + operators + motions + text objects
-    modes.js               // Normal / Insert / Visual / Command / Operator-pending state
-    domSelector.js          // element traversal for visual mode & text objects
-    textObjects.js
-    visualMode.js
-    vimgolf.js
+    content.js             // entry point: key routing, auto-passthrough, site pause
+    keyHandler.js           // FSM: counts + operators + motions + text objects
+    modes.js                // Normal / Insert / Visual / Command / Operator-pending state
+    features.js             // Classic / Power User / Custom presets gate bindings
+    keymap.js               // user key overrides
+    commands.js, scroll.js, linkHints.js, find.js, marks.js
+    domSelector.js, markdown.js, visualMode.js
+    macro.js, tabOverview.js, undo.js, nudges.js
+    textObjects.js, vimgolf.js      // Phase 5
   ui/
-    hud.css                // terminal HUD theme (mode orb, keystroke trail, scanlines)
-    hud.js
-    commandPalette.js
-    modeIndicator.js
-  options/
-    options.html
-    options.js
+    tokens.css              // design tokens (single source of truth)
+    hud.css, hud.js          // HUD shadow root, toasts, scanlines
+    modeIndicator.js         // status strip / corner pill
+    keystrokeTrail.js, commandPalette.js, preview.js, help.js, undoPanel.js
+  tutorial/                 // first-run interactive tutorial
+  options/                  // presets, searchable keys, settings
   icons/
 ```
 
@@ -183,13 +199,18 @@ Storage notes: `chrome.storage.sync` caps out around 100KB total / ~8KB per item
 
 ## 4. Build Roadmap
 
-| Phase | Scope |
-|---|---|
-| 1 | Vimium core parity (Tier 0) + Terminal HUD skin |
-| 2 | Command bar + Visual mode |
-| 3 | Macros + Tab registers |
-| 4 | Undo tree + Splits |
-| 5 | Text objects + Vimgolf mode + UI polish (scanlines, minimap, animations) |
+| Phase | Scope | Status |
+|---|---|---|
+| 1 | Vimium core parity (Tier 0) + HUD | done |
+| 2 | Command bar + Visual mode | done |
+| 3 | Macros + Tab registers | done |
+| 4 | Undo tree + Splits | done |
+| 4.5 | Design system + UX pass: new HUD look and status strip, keystroke trail, opt-in scanlines, Classic / Power User / Custom presets, first-run tutorial, auto-passthrough, toolbar on/off/pause, `?` help, close previews + undo toasts, mode hints, settings rebuild | done |
+| 5 | Text objects + Vimgolf mode + minimap | next |
+
+Phase 4.5 was slotted in after Phase 4 so the UX floor (safe defaults, onboarding, escape hatches) exists
+before more power features land. It pulled the keystroke trail and the scanline toggle forward from
+Phase 5.
 
 ---
 
@@ -209,8 +230,11 @@ Copy each into your coding AI of choice (e.g. Claude Code) once the previous pha
 **Phase 4 prompt:**
 > Add an undo tree: every closed tab, hidden element, and form edit becomes a node; `u`/`Ctrl-r` move linearly, `g-`/`g+` walk the full branching tree, and add a small collapsible side panel visualizing the tree with clickable nodes. Add splits: `:sp`/`:vsp` position two real browser windows edge-to-edge via chrome.windows (note in code comments that true same-tab iframe splitting won't work on sites with frame-blocking headers), `Ctrl-w hjkl` to move focus between them, `Ctrl-w c` to close one.
 
+**Phase 4.5 prompt (design system + UX pass):**
+> Treat `panemux-design-system.md` and `panemux-ux-guidelines.md` as the source of truth. Replace the neon/CRT theme with the design tokens; swap the mode orb for a 24px bottom status strip with reserved space (corner-pill fallback when a site owns the bottom edge); make the HUD root zero-size with `pointer-events: none`; remove the glitch animation and make scanlines opt-in. Ship Classic as the default preset (Tier 0 only) with Power User and Custom opt-in; add the interactive first-run tutorial, auto-passthrough on editable elements, a toolbar on/off/paused-for-this-site toggle, a searchable `?` help overlay, previews before closing 2+ tabs and Undo toasts, first-time mode hints and a stuck-user nudge, and rebuild settings around preset cards with search and per-key reset.
+
 **Phase 5 prompt:**
-> Add text objects usable after an operator or in Visual mode: `dap`/`yip`/`cit` etc., implemented by walking up the DOM to the nearest matching structural boundary (p, section, article, td). Add Vimgolf mode: a toggleable HUD scoring keystroke/command count per session against an estimated mouse-only baseline, with a local leaderboard in chrome.storage.local. Finish the Terminal HUD polish: optional CRT scanline overlay toggle, keystroke trail pill stack bottom-left, and the collapsible DOM-outline minimap.
+> Add text objects usable after an operator or in Visual mode: `dap`/`yip`/`cit` etc., implemented by walking up the DOM to the nearest matching structural boundary (p, section, article, td). Add Vimgolf mode: a toggleable HUD scoring keystroke/command count per session against an estimated mouse-only baseline, with a local leaderboard in chrome.storage.local. Finish with the collapsible DOM-outline minimap. Follow `panemux-design-system.md` for every new HUD element (the keystroke trail and scanline toggle already shipped in Phase 4.5).
 
 ---
 
