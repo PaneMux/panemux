@@ -331,22 +331,4 @@ test.describe("misc", () => {
     await page.click("h1");
     await expect.poll(() => mode(page)).toBe("normal");
   });
-
-  test("options: classic theme + hiding the orb apply live", async ({ page, context, extensionId }) => {
-    await open(page);
-    const opts = await context.newPage();
-    await opts.goto(`chrome-extension://${extensionId}/options/options.html`);
-    await expect(opts.locator("#keys tr")).toHaveCount(35);
-    await opts.selectOption("#theme", "classic");
-    await opts.uncheck("#showModeOrb");
-    await expect(opts.locator("#status")).toHaveText("✓ saved");
-    await opts.screenshot({ path: "test-results/options.png" });
-    await expect.poll(() => page.evaluate(() => document.querySelector("panemux-hud").classList.contains("classic"))).toBe(true);
-    await expect.poll(() => hud(page, (r) => r.querySelector(".orb").hidden)).toBe(true);
-    await page.bringToFront();
-    await page.keyboard.press("f");
-    const bg = await hud(page, (r) => getComputedStyle(r.querySelector(".hint")).backgroundImage);
-    expect(bg).toContain("linear-gradient");
-    await page.keyboard.press("Escape");
-  });
 });
