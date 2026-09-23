@@ -202,8 +202,9 @@ test.describe("tab registers", () => {
     // Close them from the overview with x, then put them back with "ap
     await page.keyboard.press("Shift+T");
     await type(page, ["j", "Space", "Space", "x"]);
-    await expect.poll(async () => (await tabsList(page)).length).toBe(2);
-    await page.keyboard.press("Escape");
+    await expect.poll(() => hud(page, (r) => r.querySelector(".preview .title")?.textContent)).toContain("This will close 2 tabs");
+    await page.keyboard.press("Enter");
+
     const urls = () => serviceWorker.evaluate(async () => (await chrome.tabs.query({})).map((t) => t.url || t.pendingUrl).sort());
     expect(await urls()).toEqual([`${BASE}/long.html`, `${BASE}/page2.html?z`]);
     await type(page, ['"', "a", "p"]);

@@ -114,8 +114,10 @@ test.describe("command bar", () => {
     const count = () => serviceWorker.evaluate(async () => (await chrome.tabs.query({})).length);
     expect(await count()).toBe(4);
     await ex(page, "tbdo close *page2.html*"); // "tbdo" fuzzy-resolves to tabdo
+    await expect.poll(() => hud(page, (r) => r.querySelector(".preview .title")?.textContent)).toContain("This will close 2 tabs");
+    await page.keyboard.press("Enter");
     await expect.poll(count).toBe(2);
-    await expect.poll(() => toast(page)).toContain("closed 2 tabs");
+    await expect.poll(() => toast(page)).toContain("Closed 2 tabs");
   });
 
   test(":g/pattern/action and :g!/pattern/action", async ({ page, context, serviceWorker }) => {

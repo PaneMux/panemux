@@ -36,6 +36,8 @@ test.describe("undo tree", () => {
     for (const q of ["x", "y"]) { const t = await context.newPage(); await open(t, `page2.html?${q}`); }
     await page.bringToFront();
     await ex(page, "tabdo close *page2*");
+    await expect.poll(() => hud(page, (r) => r.querySelector(".preview .title")?.textContent)).toContain("This will close 2 tabs");
+    await page.keyboard.press("Enter");
     await expect.poll(() => urls(serviceWorker)).toEqual([`${BASE}/long.html`]);
     await expect.poll(async () => { const t = await tree(serviceWorker); return t.nodes[t.cur].label; }).toBe("close 2 tabs");
     await page.keyboard.press("u");
