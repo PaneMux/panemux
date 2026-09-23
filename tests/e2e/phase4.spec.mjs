@@ -200,7 +200,8 @@ test.describe("splits", () => {
     await expect.poll(() => focusedUrl(serviceWorker)).toMatch(/\?left$/);
 
     await right.bringToFront();
-    await type(right, ["Shift+W", "c"]);
+    await right.keyboard.press("Shift+W");
+    await right.keyboard.press("c").catch(() => {}); // the window closes mid-press
     await expect.poll(async () => (await wins(serviceWorker)).length).toBe(1);
     await expect.poll(async () => { const [w] = await wins(serviceWorker); return [w.left, w.width, w.url]; }).toEqual([0, 1400, `${BASE}/long.html?left`]);
     // Closing the split window isn't an undoable "closed tab".
