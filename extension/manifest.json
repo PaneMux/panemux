@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "PaneMux",
-  "version": "0.4.0",
-  "description": "Vimium, but the browser becomes a modal editor. Navigation, : command bar, Visual mode, macros, tab registers, undo tree, splits, Terminal HUD.",
+  "version": "0.5.0",
+  "description": "Keyboard-driven browsing: Vimium-style navigation, plus macros, tab registers, an undo tree and splits when you want them.",
   "permissions": [
     "tabs",
     "storage",

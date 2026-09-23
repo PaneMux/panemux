@@ -1,7 +1,7 @@
 {
   "name": "panemux",
   "private": true,
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Modal, keyboard-driven browsing for Chrome: Vimium-style navigation plus macros, registers, an undo tree and splits.",
   "scripts": {
     "test": "node --test tests/unit/*.test.mjs && playwright test",
