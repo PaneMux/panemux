@@ -9,6 +9,7 @@
 import { allRegisters, listTabRegisters } from "./registers.js";
 import { listMacros } from "./macroRecorder.js";
 import { split, closeSplit } from "./splits.js";
+import { closeTabs } from "./safety.js";
 
 const commands = [];
 
@@ -44,7 +45,7 @@ export async function execute(raw, ctx) {
 // ---- tab actions shared by :tabdo, :bufdo, :g -------------------------------
 
 const TAB_ACTIONS = {
-  close:     (tabs) => chrome.tabs.remove(tabs.map((t) => t.id)),
+  close:     null, // handled by safety.closeTabs (preview + undo toast)
   reload:    (tabs) => Promise.all(tabs.map((t) => chrome.tabs.reload(t.id))),
   pin:       (tabs) => Promise.all(tabs.map((t) => chrome.tabs.update(t.id, { pinned: true }))),
   unpin:     (tabs) => Promise.all(tabs.map((t) => chrome.tabs.update(t.id, { pinned: false }))),
@@ -68,11 +69,12 @@ export function globMatcher(pattern) {
   return (t) => re.test(t.url || "") || re.test(t.title || "");
 }
 
-async function runTabAction(action, tabs) {
-  const fn = TAB_ACTIONS[action];
-  if (!fn) throw new Error(`Unknown tab action "${action || ""}" (use: ${ACTION_NAMES})`);
+// describe: how the tabs were picked, shown in the close preview
+async function runTabAction(action, tabs, ctx, describe) {
+  if (!(action in TAB_ACTIONS)) throw new Error(`Unknown tab action "${action || ""}" (use: ${ACTION_NAMES})`);
   if (!tabs.length) return { message: "No matching tabs" };
-  await fn(tabs);
+  if (action === "close") return closeTabs(tabs, { describe, notifyTabId: ctx.tab && ctx.tab.id });
+  await TAB_ACTIONS[action](tabs);
   return { message: `${PAST[action]} ${tabs.length} tab${tabs.length === 1 ? "" : "s"}` };
 }
 
@@ -80,10 +82,11 @@ registerCommand({
   name: "tabdo",
   usage: ":tabdo <action> [pattern]",
   desc: "Do something to every tab in this window, or only those matching — e.g. close *news*",
-  async run(args, { tab }) {
+  async run(args, ctx) {
     const [action, ...rest] = args.split(/\s+/).filter(Boolean);
-    const tabs = (await chrome.tabs.query({ windowId: tab.windowId })).filter(globMatcher(rest.join(" ")));
-    return runTabAction(action, tabs);
+    const pattern = rest.join(" ");
+    const tabs = (await chrome.tabs.query({ windowId: ctx.tab.windowId })).filter(globMatcher(pattern));
+    return runTabAction(action, tabs, ctx, pattern ? `matching '${pattern}'` : "in this window");
   },
 });
 
@@ -91,23 +94,25 @@ registerCommand({
   name: "bufdo",
   usage: ":bufdo <action> [pattern]",
   desc: "Do something to every open tab in every window — e.g. reload",
-  async run(args) {
+  async run(args, ctx) {
     const [action, ...rest] = args.split(/\s+/).filter(Boolean);
-    const tabs = (await chrome.tabs.query({})).filter(globMatcher(rest.join(" ")));
-    return runTabAction(action, tabs);
+    const pattern = rest.join(" ");
+    const tabs = (await chrome.tabs.query({})).filter(globMatcher(pattern));
+    return runTabAction(action, tabs, ctx, pattern ? `matching '${pattern}' in every window` : "in every window");
   },
 });
 
 // :g/pattern/action — regex over title + URL. :g!/pattern/action inverts.
 function globalCommand(invert) {
-  return async (args, { tab }) => {
+  return async (args, ctx) => {
+    const { tab } = ctx;
     const m = args.match(/^\/((?:\\.|[^/])*)\/(\w*)\s*$/);
     if (!m) throw new Error(`Usage: :g${invert ? "!" : ""}/pattern/action`);
     let re;
     try { re = new RegExp(m[1], "i"); } catch (e) { throw new Error(`Bad pattern: ${e.message}`); }
     const tabs = (await chrome.tabs.query({ windowId: tab.windowId }))
       .filter((t) => re.test(t.title || "") || re.test(t.url || "") ? !invert : invert);
-    return runTabAction(m[2], tabs);
+    return runTabAction(m[2], tabs, ctx, `${invert ? "not matching" : "matching"} /${m[1]}/`);
   };
 }
 registerCommand({ name: "g", aliases: ["global"], usage: ":g/pattern/action", desc: "Do something to tabs whose title or address matches a pattern", run: globalCommand(false) });
