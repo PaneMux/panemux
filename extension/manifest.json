@@ -51,6 +51,7 @@
         "ui/undoPanel.js",
         "ui/help.js",
         "content/commands.js",
+        "content/nudges.js",
         "content/content.js"
       ]
     }

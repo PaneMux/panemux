@@ -154,7 +154,7 @@ kbd, .key {
   70%  { opacity: 1; transform: translateY(0); }
   100% { opacity: 0; transform: translateY(-6px); }
 }
-.modehint:not([hidden]) ~ .trail { bottom: calc(var(--hud-bottom) + 34px); }
+:host(.pmx-hinting) .trail { bottom: calc(var(--hud-bottom) + 34px); }
 
 /* ---- toast ----------------------------------------------------------------- */
 .toast {
