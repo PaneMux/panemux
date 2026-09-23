@@ -52,6 +52,7 @@
         "ui/help.js",
         "content/commands.js",
         "content/nudges.js",
+        "content/keymap.js",
         "content/content.js"
       ]
     }
