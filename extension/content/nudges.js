@@ -83,5 +83,20 @@ PaneMux.Nudges = (() => {
     onMode(mode);
   });
 
-  return { invalidKey, show, HINTS, MAX_SHOWS };
+  // Days PaneMux was actually used (a key handled), for the options page's
+  // "try Power User" suggestion after ~3 days. Last 30 days only.
+  let dayMarked = null;
+  function touchDay() {
+    const today = new Date().toISOString().slice(0, 10);
+    if (dayMarked === today) return;
+    dayMarked = today;
+    try {
+      chrome.storage.local.get("usageDays", (r) => {
+        const days = (r && r.usageDays) || [];
+        if (!days.includes(today)) chrome.storage.local.set({ usageDays: [...days, today].slice(-30) });
+      });
+    } catch (e) {}
+  }
+
+  return { invalidKey, touchDay, show, HINTS, MAX_SHOWS };
 })();

@@ -14,6 +14,7 @@
     e.preventDefault();
     e.stopImmediatePropagation();
     suppressedKeyups.add(e.code);
+    if (PaneMux.Nudges) PaneMux.Nudges.touchDay();
   }
 
   const ownFocus = () => HUD.owns(Dom.activeElement());
