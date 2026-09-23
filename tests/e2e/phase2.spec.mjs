@@ -36,17 +36,17 @@ const hintLabelAt = (page, selector) => page.evaluate((sel) => {
 }, selector);
 
 test.describe("command bar", () => {
-  test(": opens palette with glitch-in, cyan CMD orb, Esc closes", async ({ page }) => {
+  test(": opens palette (fade + scale in), Command mode in the strip, Esc closes", async ({ page }) => {
     await open(page);
     await page.keyboard.press(":");
     expect(await mode(page)).toBe("command");
     const s = await hud(page, (r) => ({
       anim: getComputedStyle(r.querySelector(".palette")).animationName,
-      label: r.querySelector(".orb").textContent,
+      label: r.querySelector(".strip .label").textContent,
     }));
-    expect(s.anim).toBe("pmx-glitch-in");
-    expect(s.label).toBe("CMD");
-    await expect.poll(() => hud(page, (r) => getComputedStyle(r.querySelector(".orb")).borderTopColor)).toBe("rgb(0, 229, 255)");
+    expect(s.anim).toBe("pmx-in");
+    expect(s.label).toBe("Command");
+    await expect.poll(() => hud(page, (r) => getComputedStyle(r.querySelector(".strip .dot")).backgroundColor)).toBe("rgb(56, 189, 248)");
     await expect.poll(async () => (await palette(page)).items.length).toBe(8);
     await page.waitForTimeout(250);
     await page.screenshot({ path: "test-results/palette.png" });
@@ -161,16 +161,16 @@ test.describe("splits", () => {
 });
 
 test.describe("visual mode", () => {
-  test("v selects the clicked element; magenta VIS orb; Esc exits", async ({ page }) => {
+  test("v selects the clicked element; Visual shown in violet; Esc exits", async ({ page }) => {
     await open(page, "visual.html");
     await page.click("#p2");
     await page.keyboard.press("v");
     expect(await mode(page)).toBe("visual");
     await expectSelected(page, "#p2");
-    const s = await hud(page, (r) => ({ label: r.querySelector(".vsel-label").textContent, orb: r.querySelector(".orb").textContent }));
+    const s = await hud(page, (r) => ({ label: r.querySelector(".vsel-label").textContent, mode: r.querySelector(".strip .label").textContent }));
     expect(s.label).toContain("p#p2");
-    expect(s.orb).toBe("VIS");
-    await expect.poll(() => hud(page, (r) => getComputedStyle(r.querySelector(".orb")).borderTopColor)).toBe("rgb(255, 46, 176)");
+    expect(s.mode).toBe("Visual");
+    await expect.poll(() => hud(page, (r) => getComputedStyle(r.querySelector(".strip .dot")).backgroundColor)).toBe("rgb(167, 139, 250)");
     await page.keyboard.press("h");
     await page.waitForTimeout(250);
     await page.screenshot({ path: "test-results/visual.png" });

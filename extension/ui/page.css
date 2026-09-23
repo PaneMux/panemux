@@ -14,13 +14,43 @@
   font-display: swap;
   src: url("chrome-extension://__MSG_@@extension_id__/ui/fonts/jetbrains-mono-latin-700-normal.woff2") format("woff2");
 }
+@font-face {
+  font-family: "PaneMux Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("chrome-extension://__MSG_@@extension_id__/ui/fonts/inter-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "PaneMux Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("chrome-extension://__MSG_@@extension_id__/ui/fonts/inter-latin-500-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "PaneMux Inter";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("chrome-extension://__MSG_@@extension_id__/ui/fonts/inter-latin-600-normal.woff2") format("woff2");
+}
+
+/* Reserved space for the status strip: the page gets 24px of extra room at
+   the bottom so the strip never sits on top of content. Only applied when
+   the page scrolls normally and has no fixed-bottom UI of its own
+   (otherwise the indicator falls back to the corner pill). */
+html[data-panemux-strip] {
+  padding-bottom: 24px !important;
+  scroll-padding-bottom: 24px;
+}
 
 /* Find-on-page matches (CSS Custom Highlight API, no DOM mutation). */
 ::highlight(pmx-find) {
-  background-color: rgba(0, 229, 255, 0.28);
+  background-color: rgba(56, 189, 248, 0.25);
   color: inherit;
 }
 ::highlight(pmx-find-current) {
-  background-color: #00e5ff;
-  color: #0a0a0f;
+  background-color: #38BDF8;
+  color: #0B0B0F;
 }
