@@ -4,14 +4,25 @@ window.PaneMux = window.PaneMux || {};
 
 PaneMux.Settings = (() => {
   const DEFAULTS = {
-    theme: "terminal",        // "terminal" | "classic"
-    showModeOrb: true,
+    // on/off and per-site pause (toolbar button)
+    enabled: true,
+    pausedSites: [],          // hostnames
+    // feature presets (see features.js): "classic" | "power" | "custom"
+    preset: "classic",
+    features: {},             // per-feature switches, used by the "custom" preset
+    keyOverrides: {},         // "mode:defaultKeys" -> new keys ("" disables)
+    // look
+    indicator: "auto",        // "auto" (status strip, pill when it would clash) | "pill"
+    modeHints: true,          // "Insert mode — Esc to exit" for the first few switches
+    scanlines: false,         // opt-in CRT easter egg
+    // behaviour
     smoothScroll: true,
     scrollStep: 60,           // px per j/k/h/l
     hintChars: "sadfjklewcmpgh",
     openNewTabInBackground: true, // F opens links in a background tab (Vimium default)
     ambiguousTimeout: 1000,   // ms to wait when a key is both a full binding and a prefix
-    uKey: "undo",             // Normal-mode u: "undo" (Vim, Phase 4) or "scroll" (Vimium half page up)
+    uKey: "undo",             // with undo on: "undo" or "scroll" (Vimium's half page up)
+    confirmBulkClose: true,   // preview before closing 2+ tabs (always on in Classic)
   };
 
   let values = { ...DEFAULTS };

@@ -26,6 +26,7 @@
 //   Keys.map(..., { passKey: true })     run the command but still deliver the key to the page
 //   Keys.onPending(fn)                   HUD display of pending keys
 //   Keys.onDispatch(fn)                  observe every dispatched command (macros, vimgolf)
+//   Keys.setFilter(fn)                   hide bindings (feature presets); hidden keys reach the page
 PaneMux.Keys = (() => {
   const S = { IDLE: "IDLE", COUNT: "COUNT", SEQUENCE: "SEQUENCE", CHAR_ARG: "CHAR_ARG", OPERATOR: "OPERATOR" };
 
@@ -44,6 +45,7 @@ PaneMux.Keys = (() => {
   let opCount = "";        // count typed after an operator ("d3j")
   let ambiguityTimer = null;
   let opPrevMode = null;
+  let filter = () => true; // binding -> usable? (feature presets)
 
   const newNode = () => ({ children: Object.create(null), binding: null });
 
@@ -154,6 +156,10 @@ PaneMux.Keys = (() => {
     return tries[mode] || null;
   }
 
+  // A node is usable if it or anything below it has a binding the filter allows.
+  const usableBinding = (n) => (n && n.binding && filter(n.binding) ? n.binding : null);
+  const usable = (n) => !!n && (!!usableBinding(n) || Object.values(n.children).some(usable));
+
   // After an operator, keys resolve through the "operator" trie (text
   // objects) first, then the motions of the mode the operator was typed in.
   function operatorRootChild(k) {
@@ -236,9 +242,10 @@ PaneMux.Keys = (() => {
       return true;
     }
 
-    const next = op
+    let next = op
       ? (node ? node.children[k] : operatorRootChild(k))
       : (node || lookupRoot(PaneMux.Modes.current) || newNode()).children[k];
+    if (!usable(next)) next = null;
 
     if (!next) {
       const hadPending = state !== S.IDLE;
@@ -251,20 +258,21 @@ PaneMux.Keys = (() => {
     }
 
     keys.push(k);
-    const hasChildren = Object.keys(next.children).length > 0;
+    const binding = usableBinding(next);
+    const hasChildren = Object.values(next.children).some(usable);
 
-    if (next.binding && !hasChildren) {
-      accept(next.binding, event);
-      return !next.binding.passKey; // passKey: run the command but let the page see the key too
+    if (binding && !hasChildren) {
+      accept(binding, event);
+      return !binding.passKey; // passKey: run the command but let the page see the key too
     }
 
     node = next;
     if (state !== S.OPERATOR) state = S.SEQUENCE;
     emitPending();
 
-    if (next.binding) {
+    if (binding) {
       const timeout = (PaneMux.Settings && PaneMux.Settings.get("ambiguousTimeout")) || 1000;
-      ambiguityTimer = setTimeout(() => { ambiguityTimer = null; accept(next.binding); }, timeout);
+      ambiguityTimer = setTimeout(() => { ambiguityTimer = null; accept(binding); }, timeout);
     }
     return true;
   }
@@ -280,6 +288,7 @@ PaneMux.Keys = (() => {
     defineOperator,
     feed,
     reset,
+    setFilter: (fn) => { filter = fn; },
     get state() { return state; },
     get pending() { return pendingString(); },
     commands,

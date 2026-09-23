@@ -28,9 +28,13 @@ export const test = base.extend({
     await context.close();
     fs.rmSync(userDataDir, { recursive: true, force: true });
   },
-  serviceWorker: async ({ context }, use) => {
+  // Most specs exercise every feature, so they run on the Power User preset;
+  // specs about defaults override this with test.use({ pmxSettings: {} }).
+  pmxSettings: [{ preset: "power" }, { option: true }],
+  serviceWorker: async ({ context, pmxSettings }, use) => {
     let [sw] = context.serviceWorkers();
     if (!sw) sw = await context.waitForEvent("serviceworker");
+    await sw.evaluate((s) => chrome.storage.sync.set(s), pmxSettings);
     await use(sw);
   },
   extensionId: async ({ serviceWorker }, use) => {
@@ -51,7 +55,7 @@ export async function open(page, file = "long.html") {
 export async function ready(page) {
   await page.waitForFunction(() => {
     const h = document.querySelector("panemux-hud");
-    return h && h.shadowRoot && h.shadowRoot.querySelector(".orb");
+    return h && h.isConnected && h.shadowRoot && h.shadowRoot.adoptedStyleSheets.length === 2 && h.shadowRoot.querySelector(".strip, .pill");
   });
   // Give focus to the document body so keys go to the page, not the URL bar.
   await page.evaluate(() => window.focus());
@@ -60,7 +64,8 @@ export async function ready(page) {
 export const hud = (page, fn, arg) =>
   page.evaluate(([src, a]) => new Function("root", "arg", `return (${src})(root, arg)`)(document.querySelector("panemux-hud").shadowRoot, a), [fn.toString(), arg]);
 
-export const mode = (page) => hud(page, (root) => root.querySelector(".orb").dataset.mode);
+export const indicator = (page) => hud(page, (root) => root.querySelector(".strip, .pill"));
+export const mode = (page) => hud(page, (root) => root.querySelector(".strip, .pill").dataset.mode);
 export const scrollY = (page) => page.evaluate(() => Math.round(scrollY));
 export const scrollX = (page) => page.evaluate(() => Math.round(scrollX));
 export const toast = (page) => hud(page, (root) => root.querySelector(".toast.show")?.textContent || "");

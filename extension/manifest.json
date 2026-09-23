@@ -30,9 +30,11 @@
         "content/settings.js",
         "content/modes.js",
         "content/keyHandler.js",
+        "content/features.js",
         "content/fuzzy.js",
         "ui/hud.js",
         "ui/modeIndicator.js",
+        "ui/keystrokeTrail.js",
         "content/scroll.js",
         "content/linkHints.js",
         "content/find.js",
@@ -53,6 +55,7 @@
   "web_accessible_resources": [
     {
       "resources": [
+        "ui/tokens.css",
         "ui/hud.css",
         "ui/fonts/*"
       ],
