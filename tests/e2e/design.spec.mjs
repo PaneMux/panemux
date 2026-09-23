@@ -142,3 +142,21 @@ test.describe("Classic preset visuals", () => {
     expect(await hud(page, (r) => r.querySelectorAll(".trail .chip").length)).toBe(0);
   });
 });
+
+test("link hints skip elements that are only visible under the status strip", async ({ page }) => {
+  await open(page);
+  // Put a link so that only its last few pixels peek out under the strip.
+  await page.evaluate(() => {
+    const a = document.createElement("a");
+    a.id = "under-strip"; a.href = "#x"; a.textContent = "hidden by strip";
+    a.style.cssText = `position:fixed;left:300px;top:${innerHeight - 20}px;font-size:12px`;
+    document.body.appendChild(a);
+  });
+  await page.keyboard.press("f");
+  const found = await page.evaluate(() => {
+    const t = document.getElementById("under-strip").getBoundingClientRect();
+    return [...document.querySelector("panemux-hud").shadowRoot.querySelectorAll(".hint")].some((h) => Math.abs(parseFloat(h.style.left) - t.left) < 2);
+  });
+  expect(found).toBe(false);
+  await page.keyboard.press("Escape");
+});

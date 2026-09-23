@@ -28,9 +28,11 @@ PaneMux.LinkHints = (() => {
   // Visible, unobscured rect for `el`, or null.
   function visibleRect(el) {
     if (el.disabled) return null;
+    // The status strip covers the bottom band; anything only visible under it isn't really visible.
+    const floor = innerHeight - (PaneMux.ModeIndicator && PaneMux.ModeIndicator.layout === "strip" ? 24 : 0);
     for (const r of el.getClientRects()) {
       const left = Math.max(r.left, 0), top = Math.max(r.top, 0);
-      const right = Math.min(r.right, innerWidth), bottom = Math.min(r.bottom, innerHeight);
+      const right = Math.min(r.right, innerWidth), bottom = Math.min(r.bottom, floor);
       if (right - left < 3 || bottom - top < 3) continue;
       // Occlusion check: sample the centre and the top-left corner.
       for (const [x, y] of [[(left + right) / 2, (top + bottom) / 2], [left + 2, top + 2]]) {
