@@ -131,10 +131,11 @@ PaneMux.Undo = (() => {
   map("normal", "<c-d>", "scrollHalfDown", { motion: true });
   map("normal", "<c-u>", "scrollHalfUp", { motion: true });
 
-  // Phase 1 (Vimium) had u = half page up; Phase 4 (Vim) makes it undo.
-  // Options -> "u key" picks; default is undo.
+  // Vimium's u is half page up; Vim's is undo. Undo wins when the undo feature
+  // is on (Power User), unless Settings says otherwise; Classic keeps Vimium's.
   function applyUKey() {
-    map("normal", "u", PaneMux.Settings.get("uKey") === "scroll" ? "scrollHalfUp" : "undo", { motion: PaneMux.Settings.get("uKey") === "scroll" });
+    const scroll = !PaneMux.Features.enabled("undo") || PaneMux.Settings.get("uKey") === "scroll";
+    map("normal", "u", scroll ? "scrollHalfUp" : "undo", { motion: scroll });
   }
   applyUKey();
   PaneMux.Settings.ready.then(applyUKey);
