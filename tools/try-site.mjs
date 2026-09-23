@@ -12,15 +12,19 @@ const ctx = await chromium.launchPersistentContext(dir, {
   channel: "chromium", headless: !process.env.HEADED, viewport: { width: 1280, height: 850 },
   args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`],
 });
-const page = ctx.pages()[0];
+// A fresh profile opens the tutorial in front; close it so keys reach our page.
+await new Promise((r) => setTimeout(r, 1500));
+for (const t of ctx.pages()) if (t.url().includes("/tutorial/")) await t.close();
+const page = ctx.pages()[0] || (await ctx.newPage());
+await page.bringToFront();
 const errors = [];
 page.on("console", (m) => { if (/Vimium\+\+|pmx/i.test(m.text()) || m.type() === "error") errors.push(`${m.type()}: ${m.text()}`); });
 await page.goto(url, { waitUntil: "domcontentloaded" });
-await page.waitForFunction(() => document.querySelector("panemux-hud")?.shadowRoot?.querySelector(".orb"), null, { timeout: 15000 });
+await page.waitForFunction(() => document.querySelector("panemux-hud")?.shadowRoot?.querySelector(".strip, .pill"), null, { timeout: 15000 });
 await page.waitForTimeout(1500);
 const q = (fn) => page.evaluate(`(${fn})(document.querySelector("panemux-hud").shadowRoot)`);
 const out = {};
-out.mode = await q((r) => r.querySelector(".orb").dataset.mode);
+out.mode = await q((r) => r.querySelector(".strip, .pill").dataset.mode);
 out.font = await page.evaluate(async () => { try { await document.fonts.load('700 12px "PaneMux JetBrains Mono"'); } catch (e) { return "err " + e; } return document.fonts.check('700 12px "PaneMux JetBrains Mono"'); });
 await page.mouse.click(5, 400); // focus page without hitting links
 if (out.mode === "insert") await page.keyboard.press("Escape");

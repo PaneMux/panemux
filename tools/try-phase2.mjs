@@ -12,15 +12,19 @@ const ctx = await chromium.launchPersistentContext(fs.mkdtempSync(path.join(os.t
   args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`],
 });
 await ctx.grantPermissions(["clipboard-read", "clipboard-write"], { origin: new URL(url).origin });
-const page = ctx.pages()[0];
+// A fresh profile opens the tutorial in front; close it so keys reach our page.
+await new Promise((r) => setTimeout(r, 1500));
+for (const t of ctx.pages()) if (t.url().includes("/tutorial/")) await t.close();
+const page = ctx.pages()[0] || (await ctx.newPage());
+await page.bringToFront();
 const errors = [];
 page.on("console", (m) => { if (/Vimium\+\+/.test(m.text())) errors.push(m.text()); });
 await page.goto(url, { waitUntil: "domcontentloaded" });
-await page.waitForFunction(() => document.querySelector("panemux-hud")?.shadowRoot?.querySelector(".orb"));
+await page.waitForFunction(() => document.querySelector("panemux-hud")?.shadowRoot?.querySelector(".strip, .pill"));
 await page.waitForTimeout(1200);
 const q = (fn) => page.evaluate(`(${fn})(document.querySelector("panemux-hud").shadowRoot)`);
 await page.mouse.click(640, 500);
-if ((await q((r) => r.querySelector(".orb").dataset.mode)) !== "normal") await page.keyboard.press("Escape");
+if ((await q((r) => r.querySelector(".strip, .pill").dataset.mode)) !== "normal") await page.keyboard.press("Escape");
 const out = {};
 await page.keyboard.press("v");
 out.start = await q((r) => r.querySelector(".vsel-label")?.textContent);

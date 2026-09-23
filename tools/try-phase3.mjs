@@ -12,8 +12,12 @@ const ctx = await chromium.launchPersistentContext(fs.mkdtempSync(path.join(os.t
   args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`],
 });
 const sw = ctx.serviceWorkers()[0] || (await ctx.waitForEvent("serviceworker"));
-const page = ctx.pages()[0];
-const ready = () => page.waitForFunction(() => document.querySelector("panemux-hud")?.shadowRoot?.querySelector(".orb"), null, { timeout: 20000 });
+// A fresh profile opens the tutorial in front; close it so keys reach our page.
+await new Promise((r) => setTimeout(r, 1500));
+for (const t of ctx.pages()) if (t.url().includes("/tutorial/")) await t.close();
+const page = ctx.pages()[0] || (await ctx.newPage());
+await page.bringToFront();
+const ready = () => page.waitForFunction(() => document.querySelector("panemux-hud")?.shadowRoot?.querySelector(".strip, .pill"), null, { timeout: 20000 });
 const load = async () => { await page.goto(url, { waitUntil: "domcontentloaded" }); await ready(); await page.waitForTimeout(800); await page.mouse.click(5, 300); };
 const press = async (...ks) => { for (const k of ks) await page.keyboard.press(k); };
 const labelFor = () => page.evaluate((sel) => {
