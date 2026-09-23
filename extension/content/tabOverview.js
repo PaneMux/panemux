@@ -117,11 +117,16 @@ PaneMux.TabOverview = (() => {
   async function closeTabs() {
     const ts = targets();
     const self = ts.find((t) => t.active);
-    await bg({ type: "tabs.close", tabIds: ts.map((t) => t.id) });
+    let res = await bg({ type: "tabs.close", tabIds: ts.map((t) => t.id) });
+    if (res && res.confirm) {
+      close(); // the preview takes the keyboard
+      await PaneMux.CommandPalette.confirmClose(res.confirm);
+      return;
+    }
     if (self) return; // this page is gone
-    const res = await bg({ type: "tabs.list" });
-    if (!ui || !res) return;
-    ui.tabs = res.tabs;
+    const list = await bg({ type: "tabs.list" });
+    if (!ui || !list) return;
+    ui.tabs = list.tabs;
     ui.selected.clear();
     ui.cursor = Math.min(ui.cursor, ui.tabs.length - 1);
     render();

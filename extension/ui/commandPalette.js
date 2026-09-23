@@ -168,6 +168,7 @@ PaneMux.CommandPalette = (() => {
       return; // our own tab was closed by the command
     }
     if (!res) return;
+    if (res.ok && res.confirm) return confirmClose(res.confirm);
     if (!res.ok) PaneMux.HUD.toast(res.error || "Command failed", { error: true, duration: 3000 });
     else if (res.action === "undoPanel") PaneMux.UndoPanel.toggle();
     else if (res.output) PaneMux.Output.show(res.output);
@@ -175,7 +176,16 @@ PaneMux.CommandPalette = (() => {
     return res;
   }
 
-  return { open, close, run, splitInput, get active() { return !!ui; } };
+  // Shared by the command bar and the tab overview.
+  async function confirmClose(c) {
+    const ok = await PaneMux.Preview.ask(c);
+    const res = await chrome.runtime.sendMessage({ type: ok ? "close.confirm" : "close.cancel", id: c.id }).catch(() => null);
+    if (!ok) PaneMux.HUD.toast("Nothing was closed");
+    else if (res && !res.ok) PaneMux.HUD.toast(res.error, { error: true });
+    return res;
+  }
+
+  return { open, close, run, confirmClose, splitInput, get active() { return !!ui; } };
 })();
 
 // Read-only output panel (":reg" etc.). Any key closes it.

@@ -43,6 +43,7 @@
         "content/domSelector.js",
         "content/markdown.js",
         "content/visualMode.js",
+        "ui/preview.js",
         "ui/commandPalette.js",
         "content/tabOverview.js",
         "content/macro.js",

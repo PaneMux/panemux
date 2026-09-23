@@ -204,7 +204,19 @@ kbd, .key {
 .preview .title { font-weight: 600; margin-bottom: 6px; }
 .preview ul { margin: 0 0 8px; padding: 0; list-style: none; color: var(--text-muted); font-size: var(--text-xs); max-height: 120px; overflow: auto; }
 .preview li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.preview .keys { color: var(--text-muted); font-size: var(--text-xs); }
+.preview .keys { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; color: var(--text-muted); font-size: var(--text-xs); }
+.preview .action {
+  all: unset;
+  cursor: pointer;
+  margin-left: 4px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  font: 600 var(--text-xs)/1 var(--font-ui);
+  color: var(--text-primary);
+}
+.preview .action:first-of-type { background: color-mix(in srgb, var(--danger) 18%, transparent); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+.preview .action:hover, .preview .action:focus-visible { background: color-mix(in srgb, var(--text-primary) 8%, transparent); }
 
 /* ---- find bar -------------------------------------------------------------- */
 .findbar {
