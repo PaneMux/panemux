@@ -2,6 +2,10 @@
 
 Thanks for taking a look. PaneMux is a small project, so the process is light.
 
+**A note on AI:** this repo did use some AI assistance during development, yes — but everything is
+human-verified before it's merged or pushed. Please keep that in mind while contributing: if you use AI
+tools yourself, you're responsible for reading, testing and understanding every line you submit.
+
 ## Getting set up
 
 ```sh
@@ -22,7 +26,8 @@ After editing, click ↻ on the extension card and reload the page you're testin
 - `extension/background/` — anything that needs `chrome.tabs` / `chrome.windows` / storage quotas.
 - `extension/ui/` — the HUD. All of it renders inside one shadow root, so page CSS can't touch it.
 
-The design and roadmap are in `panemux-spec.md`. If you want to build something big, open an issue first
+The design and roadmap are in `panemux-spec.md`. `panemux-design-system.md` is the source of truth for
+anything visual in the HUD, and `panemux-ux-guidelines.md` for onboarding, defaults and safety UX. If you want to build something big, open an issue first
 so we can agree on the keys. Key collisions are the usual sticking point.
 
 ## Tests
