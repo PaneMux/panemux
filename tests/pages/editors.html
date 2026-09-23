@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Editors</title>
+<style>body{margin:0;padding:20px;font:16px/1.5 Georgia,serif;height:3000px} div[contenteditable],[role=textbox]{border:1px solid #999;min-height:40px;padding:6px;margin:8px 0}</style>
+</head>
+<body>
+<div id="ce" contenteditable="true">rich text</div>
+<div id="rt" role="textbox" tabindex="0">aria textbox</div>
+<search-box id="sb"></search-box>
+<button id="remove">remove the field</button>
+<input id="doomed" type="text">
+<script>
+  customElements.define("search-box", class extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: "open" }).innerHTML = '<input id="inner" type="search" placeholder="shadow input">';
+    }
+  });
+  // role=textbox that handles its own typing, like many web editors
+  document.getElementById("rt").addEventListener("keydown", (e) => {
+    if (e.key.length === 1) { e.currentTarget.textContent += e.key; e.preventDefault(); }
+  });
+</script>
+</body>
+</html>
