@@ -48,7 +48,10 @@ PaneMux.Modes = (() => {
     get current() { return current; },
     get handler() { return handler; },
     info: (name = current) => registry[name],
-    onChange: (fn) => listeners.push(fn),
+    onChange: (fn) => {
+      listeners.push(fn);
+      return () => { const i = listeners.indexOf(fn); if (i !== -1) listeners.splice(i, 1); };
+    },
   };
 })();
 
@@ -99,7 +102,11 @@ PaneMux.Dom = {
 PaneMux.Bus = (() => {
   const subs = {};
   return {
-    on(name, fn) { (subs[name] = subs[name] || []).push(fn); },
+    on(name, fn) {
+      const list = (subs[name] = subs[name] || []);
+      list.push(fn);
+      return () => { const i = list.indexOf(fn); if (i !== -1) list.splice(i, 1); };
+    },
     emit(name, data) { (subs[name] || []).forEach((fn) => { try { fn(data); } catch (e) { console.error("PaneMux:", e); } }); },
   };
 })();

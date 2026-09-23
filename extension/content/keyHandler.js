@@ -49,6 +49,12 @@ PaneMux.Keys = (() => {
 
   const newNode = () => ({ children: Object.create(null), binding: null });
 
+  // add a listener; returns a function that removes it again
+  function subscribe(list, fn) {
+    list.push(fn);
+    return () => { const i = list.indexOf(fn); if (i !== -1) list.splice(i, 1); };
+  }
+
   // ---- key parsing -------------------------------------------------------
 
   const NAMED = {
@@ -292,7 +298,7 @@ PaneMux.Keys = (() => {
     get state() { return state; },
     get pending() { return pendingString(); },
     commands,
-    onPending: (fn) => pendingListeners.push(fn),
-    onDispatch: (fn) => dispatchListeners.push(fn),
+    onPending: (fn) => subscribe(pendingListeners, fn),
+    onDispatch: (fn) => subscribe(dispatchListeners, fn),
   };
 })();
