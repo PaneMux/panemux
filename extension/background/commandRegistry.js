@@ -79,7 +79,7 @@ async function runTabAction(action, tabs) {
 registerCommand({
   name: "tabdo",
   usage: ":tabdo <action> [pattern]",
-  desc: `Run an action on every tab in this window, optionally matching a glob (${ACTION_NAMES})`,
+  desc: "Do something to every tab in this window, or only those matching — e.g. close *news*",
   async run(args, { tab }) {
     const [action, ...rest] = args.split(/\s+/).filter(Boolean);
     const tabs = (await chrome.tabs.query({ windowId: tab.windowId })).filter(globMatcher(rest.join(" ")));
@@ -90,7 +90,7 @@ registerCommand({
 registerCommand({
   name: "bufdo",
   usage: ":bufdo <action> [pattern]",
-  desc: `Run an action on every open tab in every window (${ACTION_NAMES})`,
+  desc: "Do something to every open tab in every window — e.g. reload",
   async run(args) {
     const [action, ...rest] = args.split(/\s+/).filter(Boolean);
     const tabs = (await chrome.tabs.query({})).filter(globMatcher(rest.join(" ")));
@@ -110,14 +110,14 @@ function globalCommand(invert) {
     return runTabAction(m[2], tabs);
   };
 }
-registerCommand({ name: "g", aliases: ["global"], usage: ":g/pattern/action", desc: "Run an action on tabs whose title/URL matches a regex", run: globalCommand(false) });
-registerCommand({ name: "g!", aliases: ["v", "vglobal"], usage: ":g!/pattern/action", desc: "Run an action on tabs that do NOT match a regex", run: globalCommand(true) });
+registerCommand({ name: "g", aliases: ["global"], usage: ":g/pattern/action", desc: "Do something to tabs whose title or address matches a pattern", run: globalCommand(false) });
+registerCommand({ name: "g!", aliases: ["v", "vglobal"], usage: ":g!/pattern/action", desc: "Do something to tabs that don't match a pattern", run: globalCommand(true) });
 
 // ---- splits (two real windows; see splits.js for why not iframes) ------------
-registerCommand({ name: "sp", aliases: ["split"], usage: ":sp [url]", desc: "Horizontal split: this window on top, new window below", run: (a, c) => split(false, a, c) });
-registerCommand({ name: "vsp", aliases: ["vsplit"], usage: ":vsp [url]", desc: "Vertical split: this window left, new window right", run: (a, c) => split(true, a, c) });
+registerCommand({ name: "sp", aliases: ["split"], usage: ":sp [url]", desc: "Split the screen: this window on top, a new one below", run: (a, c) => split(false, a, c) });
+registerCommand({ name: "vsp", aliases: ["vsplit"], usage: ":vsp [url]", desc: "Split the screen: this window on the left, a new one on the right", run: (a, c) => split(true, a, c) });
 registerCommand({
-  name: "close", aliases: ["clo"], usage: ":close", desc: "Close this split window (partner takes the full area)",
+  name: "close", aliases: ["clo"], usage: ":close", desc: "Close this half of a split; the other window fills the screen",
   async run(args, { tab }) {
     const r = await closeSplit(tab.windowId);
     if (!r.ok) throw new Error(r.error);
@@ -130,7 +130,7 @@ registerCommand({
   name: "reg",
   aliases: ["registers", "di", "display"],
   usage: ":reg",
-  desc: "Show all registers (text and tab groups)",
+  desc: "Show everything you've copied and every saved tab group",
   async run() {
     const text = await allRegisters();
     const tabs = await listTabRegisters();
@@ -150,7 +150,7 @@ registerCommand({
 });
 
 registerCommand({
-  name: "undotree", aliases: ["undolist", "ut"], usage: ":undotree", desc: "Toggle the undo-tree side panel (U)",
+  name: "undotree", aliases: ["undolist", "ut"], usage: ":undotree", desc: "Show or hide the history of changes",
   run: () => ({ action: "undoPanel" }),
 });
 
@@ -158,7 +158,7 @@ registerCommand({
   name: "macros",
   aliases: ["mac"],
   usage: ":macros",
-  desc: "List recorded macros (q{a-z} records, @{a-z} plays)",
+  desc: "List your recorded key sequences",
   async run() {
     const macros = await listMacros();
     const names = Object.keys(macros).sort();
