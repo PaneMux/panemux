@@ -10,50 +10,78 @@
 <body>
   <header class="top">
     <div class="brand"><span class="dot"></span> PaneMux</div>
-    <button id="skip" class="ghost" type="button">Skip tutorial</button>
+    <div class="top-right">
+      <span class="eta">4 short lessons · about 2 minutes</span>
+      <button id="skip" class="ghost" type="button">Skip tutorial</button>
+    </div>
   </header>
 
-  <main>
-    <section class="card" id="card" aria-live="polite">
+  <div class="layout">
+    <aside class="rail" aria-label="Lessons">
+      <p class="rail-title">Lessons</p>
       <ol class="progress" id="progress"></ol>
-      <h1 id="step-title">Welcome</h1>
-      <p id="step-text"></p>
-      <p class="try" id="step-try"></p>
-      <p class="done" id="step-done" hidden></p>
-      <div class="actions" id="finish" hidden>
-        <button id="open-settings" type="button">Open settings</button>
-        <button id="close" class="ghost" type="button">Close</button>
-      </div>
-    </section>
+      <p class="rail-note">Every lesson waits for the real key, so you learn it by doing it.</p>
+    </aside>
 
-    <!-- The mock page the steps act on -->
-    <section class="mock" aria-label="Practice page">
-      <article class="article" id="article">
-        <h2>A page to practise on</h2>
-        <p>PaneMux lets you use the web from the keyboard. Keys do nothing strange while you're typing in a box —
-          the moment you click into one, PaneMux steps aside until you press <kbd>Esc</kbd>.</p>
-        <p>This article is long on purpose, so there's something to scroll. Keep going with <kbd>j</kbd>.</p>
-        <nav class="links">
-          <a href="#one" data-demo>A link</a>
-          <a href="#two" data-demo>Another link</a>
-          <a href="#next" id="lesson-link" data-demo>Open the next lesson</a>
-          <a href="#three" data-demo>One more</a>
-        </nav>
-        <label class="field">Say hello:
-          <input id="practice-input" type="text" placeholder="Type here">
-        </label>
-        <div class="filler">
-          <p>Scrolling works on any page: <kbd>j</kbd> down, <kbd>k</kbd> up, <kbd>h</kbd> and <kbd>l</kbd> sideways,
-            <kbd>d</kbd> and <kbd>u</kbd> for half a screen, <kbd>g</kbd><kbd>g</kbd> to the top, <kbd>G</kbd> to the bottom.</p>
-          <p>Link hints (<kbd>f</kbd>) put letters on everything clickable. Type the letters and PaneMux clicks it for you.
-            <kbd>F</kbd> opens the link in a new tab instead.</p>
-          <p>Search the page with <kbd>/</kbd>, then <kbd>n</kbd> and <kbd>N</kbd> to hop between matches.</p>
-          <p>Go back and forward with <kbd>H</kbd> and <kbd>L</kbd>. Switch tabs with <kbd>J</kbd> and <kbd>K</kbd>.</p>
-          <p>And whenever you forget, <kbd>?</kbd> shows every key.</p>
+    <main class="stage">
+      <section class="card" id="card" aria-live="polite">
+        <p class="eyebrow" id="step-count"></p>
+        <h1 id="step-title">Welcome</h1>
+        <p class="lead" id="step-text"></p>
+        <ul class="goals" id="goals"></ul>
+        <p class="try" id="step-try"></p>
+        <p class="done" id="step-done" hidden></p>
+        <div class="card-foot" id="card-foot">
+          <div class="bar" aria-hidden="true"><span id="bar-fill"></span></div>
+          <button id="skip-step" class="link" type="button">Skip this lesson</button>
         </div>
-      </article>
-    </section>
-  </main>
+
+        <div class="cheats" id="cheats" hidden>
+          <div><kbd>j</kbd><kbd>k</kbd><span>Scroll down / up</span></div>
+          <div><kbd>d</kbd><kbd>u</kbd><span>Half a screen</span></div>
+          <div><kbd>g</kbd><kbd>g</kbd><kbd>G</kbd><span>Top / bottom</span></div>
+          <div><kbd>f</kbd><kbd>F</kbd><span>Click a link / in a new tab</span></div>
+          <div><kbd>/</kbd><kbd>n</kbd><kbd>N</kbd><span>Search the page</span></div>
+          <div><kbd>H</kbd><kbd>L</kbd><span>Back / forward</span></div>
+          <div><kbd>J</kbd><kbd>K</kbd><span>Next / previous tab</span></div>
+          <div><kbd>?</kbd><span>Every other key</span></div>
+        </div>
+        <div class="actions" id="finish" hidden>
+          <button id="open-settings" type="button">Open settings</button>
+          <button id="close" class="ghost" type="button">Close</button>
+        </div>
+      </section>
+
+      <!-- The mock page the lessons act on -->
+      <section class="mock" aria-label="Practice page">
+        <div class="mock-chrome" aria-hidden="true"><span></span><span></span><span></span><em>practice page</em></div>
+        <article class="article" id="article">
+          <h2>A page to practise on</h2>
+          <p>PaneMux lets you use the web from the keyboard. Keys do nothing strange while you're typing in a box —
+            the moment you click into one, PaneMux steps aside until you press <kbd>Esc</kbd>.</p>
+          <p>This article is long on purpose, so there's something to scroll. Keep going with <kbd>j</kbd>.</p>
+          <nav class="links">
+            <a href="#one" data-demo>A link</a>
+            <a href="#two" data-demo>Another link</a>
+            <a href="#next" id="lesson-link" data-demo>Open the next lesson</a>
+            <a href="#three" data-demo>One more</a>
+          </nav>
+          <label class="field">Say hello:
+            <input id="practice-input" type="text" placeholder="Type here">
+          </label>
+          <div class="filler">
+            <p>Scrolling works on any page: <kbd>j</kbd> down, <kbd>k</kbd> up, <kbd>h</kbd> and <kbd>l</kbd> sideways,
+              <kbd>d</kbd> and <kbd>u</kbd> for half a screen, <kbd>g</kbd><kbd>g</kbd> to the top, <kbd>G</kbd> to the bottom.</p>
+            <p>Link hints (<kbd>f</kbd>) put letters on everything clickable. Type the letters and PaneMux clicks it for you.
+              <kbd>F</kbd> opens the link in a new tab instead.</p>
+            <p>Search the page with <kbd>/</kbd>, then <kbd>n</kbd> and <kbd>N</kbd> to hop between matches.</p>
+            <p>Go back and forward with <kbd>H</kbd> and <kbd>L</kbd>. Switch tabs with <kbd>J</kbd> and <kbd>K</kbd>.</p>
+            <p>And whenever you forget, <kbd>?</kbd> shows every key.</p>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
 
   <!-- PaneMux's own content scripts, loaded straight into this extension page
        (extension pages don't get content scripts injected). -->

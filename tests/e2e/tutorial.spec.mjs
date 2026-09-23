@@ -11,6 +11,7 @@ async function openTutorial(context, extensionId) {
   await t.evaluate(() => window.focus());
   return t;
 }
+const met = (t) => t.evaluate(() => [...document.querySelectorAll(".goal.met")].map((g) => g.dataset.goal));
 const step = (t) => t.evaluate(() => document.getElementById("card").dataset.step);
 const hintLabelFor = (t, sel) => t.evaluate((s) => {
   const r = document.querySelector(s).getBoundingClientRect();
@@ -38,8 +39,11 @@ test.describe("new install", () => {
     await t.waitForTimeout(300);
     expect(await step(t)).toBe("1");
     await t.keyboard.press("j");
+    await expect.poll(() => met(t)).toEqual(["j"]); // keycaps light up as you go
     await t.keyboard.press("k");
     await expect.poll(() => step(t)).toBe("2");
+    expect(await t.locator("#lesson-link").getAttribute("class")).toContain("spotlight");
+    await t.screenshot({ path: "test-results/tutorial-2.png" });
 
     // Step 2: clicking some other link doesn't count; the lesson link via hints does
     await t.keyboard.press("f");
@@ -53,6 +57,7 @@ test.describe("new install", () => {
     await t.keyboard.press("i");
     await t.keyboard.type("hello");
     expect(await step(t)).toBe("3");
+    expect(await met(t)).toEqual(["in", "type"]);
     await t.keyboard.press("Escape");
     await expect.poll(() => step(t)).toBe("4");
 
@@ -66,6 +71,14 @@ test.describe("new install", () => {
     expect(await t.locator("#finish").isVisible()).toBe(true);
     await t.screenshot({ path: "test-results/tutorial-done.png" });
     expect((await serviceWorker.evaluate(() => chrome.storage.local.get("onboarding"))).onboarding).toMatchObject({ done: true, how: "finished" });
+  });
+
+  test("a lesson can be skipped without doing it", async ({ context, extensionId }) => {
+    const t = await openTutorial(context, extensionId);
+    await t.click("#skip-step");
+    expect(await step(t)).toBe("2");
+    expect(await t.locator("#progress li").first().getAttribute("class")).toBe("skipped");
+    expect(await t.locator("#step-count").textContent()).toBe("Lesson 2 of 4");
   });
 
   test("Skip closes it and remembers", async ({ context, extensionId, serviceWorker }) => {
