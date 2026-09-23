@@ -224,7 +224,9 @@ test.describe("splits", () => {
     await type(page, ["Shift+W", "j"]);
     await expect.poll(() => focusedUrl(serviceWorker)).toMatch(/\?bottom$/);
     await page.bringToFront();
-    await ex(page, "close");
+    await page.keyboard.press(":");
+    await page.keyboard.type("close");
+    await page.keyboard.press("Enter").catch(() => {}); // this window closes mid-press
     await expect.poll(async () => (await wins(serviceWorker)).map((w) => [w.url, w.height])).toEqual([[`${BASE}/long.html?bottom`, 1000]]);
   });
 });
