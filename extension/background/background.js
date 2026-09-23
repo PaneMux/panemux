@@ -3,6 +3,7 @@
 import { listCommands, execute } from "./commandRegistry.js";
 import { setRegister, setTabRegister, getTabRegister } from "./registers.js";
 import * as Undo from "./undoService.js";
+import { setupToolbar, stateFor, togglePause } from "./toolbar.js";
 import { focusDirection, cycle as cycleSplit, closeSplit } from "./splits.js";
 import { startRecording, stopRecording, recordStep, recordKey, playMacro, activeTab } from "./macroRecorder.js";
 
@@ -21,6 +22,16 @@ const handlers = {
 
   async "reg.set"({ name, value, regType }) {
     await setRegister(name, value, regType);
+    return { ok: true };
+  },
+
+  // ---- toolbar state (for the options page and tests) ----
+  async "site.state"(msg, sender) {
+    const tab = msg.tabId ? await chrome.tabs.get(msg.tabId) : sender.tab;
+    return { ok: true, state: await stateFor(tab) };
+  },
+  async "site.toggle"(msg, sender) {
+    await togglePause(msg.tabId ? await chrome.tabs.get(msg.tabId) : sender.tab);
     return { ok: true };
   },
 
@@ -188,6 +199,6 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   return true; // async reply
 });
 
-chrome.action.onClicked.addListener(() => chrome.runtime.openOptionsPage());
+setupToolbar();
 
 Undo.watchTabs();

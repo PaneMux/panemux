@@ -8,7 +8,8 @@
     "storage",
     "scripting",
     "activeTab",
-    "clipboardWrite"
+    "clipboardWrite",
+    "contextMenus"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -67,6 +68,7 @@
   "options_page": "options/options.html",
   "icons": {
     "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
@@ -74,7 +76,16 @@
     "default_title": "PaneMux",
     "default_icon": {
       "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
       "48": "icons/icon48.png"
+    }
+  },
+  "commands": {
+    "toggle-site": {
+      "suggested_key": {
+        "default": "Alt+Shift+P"
+      },
+      "description": "Pause or resume PaneMux on this site"
     }
   }
 }
