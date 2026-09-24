@@ -2,11 +2,12 @@
   "name": "panemux",
   "private": true,
   "version": "0.5.0",
-  "description": "Modal, keyboard-driven browsing for Chrome: Vimium-style navigation plus macros, registers, an undo tree and splits.",
+  "description": "Modal, keyboard-driven browsing for Chrome and Firefox: Vimium-style navigation plus macros, registers, an undo tree and splits.",
   "scripts": {
     "test": "node --test tests/unit/*.test.mjs && playwright test",
     "test:unit": "node --test tests/unit/*.test.mjs",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
     "icons": "node tools/make-icons.mjs",
     "build": "node tools/build.mjs"
   },
@@ -20,6 +21,8 @@
   },
   "keywords": [
     "chrome-extension",
+    "firefox-addon",
+    "webextension",
     "vim",
     "vimium",
     "keyboard",
