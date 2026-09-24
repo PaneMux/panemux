@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Text objects</title>
+<style>body{margin:0;padding:20px;font:16px/1.5 Georgia,serif;max-width:760px} section{margin:16px 0;padding:8px;border:1px dashed #ccc} #tall{height:1400px}</style>
+</head>
+<body>
+<article id="art">
+  <h1 id="h-intro">Introduction</h1>
+  <p id="p-intro">PaneMux treats the page like a document. The <b id="kw">needle</b> is in this paragraph.</p>
+  <p id="p-second">A second paragraph with <a href="/page2.html">a link</a>.</p>
+  <h2 id="h-usage">Usage</h2>
+  <section id="sec-usage">
+    <p id="p-usage">Press a key and something happens.</p>
+    <ul id="steps"><li id="li-one">One step</li><li id="li-two">Two <em id="em-two">steps</em></li></ul>
+    <table id="tbl"><tr id="row-head"><th>Key</th><th>What</th></tr><tr id="row-1"><td id="cell-1">yap</td><td>copy</td></tr></table>
+  </section>
+  <h2 id="h-end">The end</h2>
+  <div id="soup"><div id="soup-inner">Div soup text with no paragraph tags.</div></div>
+</article>
+<div id="tall"></div>
+<script>
+  window.pageKeys = [];
+  window.addEventListener("keydown", (e) => window.pageKeys.push(e.key));
+</script>
+</body>
+</html>

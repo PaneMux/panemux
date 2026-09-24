@@ -330,6 +330,17 @@ kbd, .key {
   transition: left var(--dur-fast) var(--ease), top var(--dur-fast) var(--ease), width var(--dur-fast) var(--ease), height var(--dur-fast) var(--ease);
 }
 .vsel.flash { animation: pmx-flash 300ms var(--ease); }
+
+/* text objects: a brief outline on what was copied / edited */
+.tobj-flash {
+  position: fixed;
+  border: 2px solid var(--mode-visual);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--mode-visual) 10%, transparent);
+  pointer-events: none;
+  animation: pmx-fade-out 500ms var(--ease) forwards;
+}
+@keyframes pmx-fade-out { 0%, 40% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes pmx-flash { 0% { background: color-mix(in srgb, var(--mode-visual) 30%, transparent); } }
 .vsel-label {
   position: fixed;

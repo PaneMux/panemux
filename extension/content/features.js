@@ -9,6 +9,7 @@
 PaneMux.Features = (() => {
   const LIST = [
     { id: "visual",     label: "Visual mode",     desc: "Select page elements with v, hide them, copy them as Markdown" },
+    { id: "textObjects", label: "Text objects",   desc: "Copy, hide or edit the paragraph, section or element you're reading: yap, dap, cit" },
     { id: "commandBar", label: "Command bar",     desc: "Type commands after : to act on many tabs at once" },
     { id: "macros",     label: "Macros",          desc: "Record a sequence of keys with q and replay it with @" },
     { id: "registers",  label: "Tab registers",   desc: "Save groups of tabs and reopen them later" },
@@ -23,6 +24,7 @@ PaneMux.Features = (() => {
 
   // command name -> feature; anything unlisted is core (always on)
   const BY_COMMAND = {
+    visualChange: "textObjects",
     visualEnter: "visual",
     commandBar: "commandBar",
     macroRecord: "macros", macroPlay: "macros",
@@ -39,13 +41,11 @@ PaneMux.Features = (() => {
   }
 
   const enabled = (id) => !id || id === "core" || !!current()[id];
-  const forCommand = (command) => BY_COMMAND[command] || "core";
+  const forCommand = (command) => BY_COMMAND[command] || (/^tobj/.test(command) ? "textObjects" : "core");
   const commandEnabled = (command) => enabled(forCommand(command));
 
-  // Modes other than Normal are only reachable through a feature's entry key,
-  // so their bindings don't need gating one by one.
   if (PaneMux.Keys && PaneMux.Keys.setFilter) {
-    PaneMux.Keys.setFilter((binding) => binding.mode !== "normal" || commandEnabled(binding.command));
+    PaneMux.Keys.setFilter((binding) => commandEnabled(binding.command));
   }
 
   return { LIST, PRESETS, BY_COMMAND, current, enabled, forCommand, commandEnabled };

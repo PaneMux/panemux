@@ -324,3 +324,34 @@ test.describe("settings page", () => {
     await expect.poll(() => ff.background(() => browser.storage.sync.get("preset").then((r) => r.preset))).toBe("classic");
   });
 });
+
+test.describe("text objects", () => {
+  test("yap copies the paragraph at the cursor; dap hides it; u restores", async ({ page }) => {
+    await open(page, "textobjects.html");
+    await page.evaluate(() => {
+      const r = document.createRange();
+      r.selectNodeContents(document.getElementById("kw"));
+      r.collapse(true);
+      getSelection().removeAllRanges();
+      getSelection().addRange(r);
+    });
+    await type(page, ["y", "a", "p"]);
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe("PaneMux treats the page like a document. The **needle** is in this paragraph.");
+    await type(page, ["d", "a", "p"]);
+    await expect(page.locator("#p-intro")).toBeHidden();
+    await expect.poll(() => toast(page)).toContain("Hid paragraph");
+    expect(await waitScroll(page, (y) => y === 0)).toBe(0);
+    await page.keyboard.press("u");
+    await expect(page.locator("#p-intro")).toBeVisible();
+  });
+
+  test("cit edits in place and Esc finishes", async ({ page }) => {
+    await open(page, "textobjects.html");
+    await page.click("#p-usage");
+    await type(page, ["c", "i", "t"]);
+    expect(await mode(page)).toBe("insert");
+    await page.keyboard.type("Changed");
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#p-usage")).toHaveText("Changed");
+  });
+});

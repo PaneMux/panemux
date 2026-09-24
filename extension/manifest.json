@@ -48,6 +48,7 @@
         "content/tabOverview.js",
         "content/macro.js",
         "content/undo.js",
+        "content/textObjects.js",
         "ui/undoPanel.js",
         "ui/help.js",
         "content/commands.js",
