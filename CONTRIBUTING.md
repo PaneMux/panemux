@@ -10,12 +10,18 @@ tools yourself, you're responsible for reading, testing and understanding every 
 
 ```sh
 npm install
-npx playwright install chromium
+npx playwright install chromium firefox
 npm test
 ```
 
 Load `extension/` unpacked from `chrome://extensions` (Developer mode on) to try your changes by hand.
-After editing, click ↻ on the extension card and reload the page you're testing on.
+After editing, click ↻ on the extension card and reload the page you're testing on. For Firefox, run
+`npm run build` and load `dist/firefox/manifest.json` from `about:debugging` → **Load Temporary Add-on**.
+
+There is one source tree for both browsers. `tools/build.mjs` derives the Firefox build from it: the
+background module runs as an event page instead of a service worker, and the manifest gets a gecko id.
+Keep using `chrome.*` (Firefox supports it, promises included) and avoid Chrome-only APIs; if you really
+need one, feature-check it.
 
 ## Where things live
 
@@ -37,6 +43,12 @@ extension (`tests/e2e/`). Pure logic (the FSM, fuzzy matching, the undo tree, sy
 unit test in `tests/unit/`. Run `npm test` before you open a PR. It has to pass.
 
 If a test needs a page, add a small one under `tests/pages/` rather than hitting a real website.
+
+`tests/firefox/` runs the same kind of checks in Playwright's Firefox (`npm run test:firefox`). Playwright
+can't load Firefox add-ons itself, so `tests/firefox/launch.mjs` installs the build through Firefox's
+remote debugging protocol, and gives tests `background(fn)` (like `serviceWorker.evaluate` in Chrome)
+and `extPage("options/")` for the add-on's own pages. If you touch anything that could behave differently
+in Firefox (storage, windows, clipboard, CSS in the shadow root), add a check there too.
 
 ## Style
 

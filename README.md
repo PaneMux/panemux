@@ -1,6 +1,6 @@
 # PaneMux
 
-Keyboard-driven browsing for Chrome, in the spirit of Vimium — but modal all the way down.
+Keyboard-driven browsing for Chrome and Firefox, in the spirit of Vimium — but modal all the way down.
 Pages are buffers, tabs are registers, and your browsing history is an undo tree.
 
 No backend, no network calls, no AI: everything runs locally on plain DOM work and string matching.
@@ -22,22 +22,40 @@ phase 5 (text objects, Vimgolf mode, minimap) is next.
 
 ## Install
 
-PaneMux isn't on the Chrome Web Store yet. Build it and load it unpacked:
+PaneMux isn't on the Chrome Web Store or addons.mozilla.org yet. Build it and load it yourself:
 
 ```sh
 npm install
-npm run build          # -> dist/panemux/ and dist/panemux-<version>.zip
+npm run build
 ```
 
+That writes one package per browser family:
+
+| Folder / zip | Browsers |
+|---|---|
+| `dist/chrome/`, `dist/panemux-chrome-<version>.zip` | Chrome, Edge, Brave, Opera, Vivaldi, Arc |
+| `dist/firefox/`, `dist/panemux-firefox-<version>.zip` | Firefox 128+ and its forks: LibreWolf, Waterfox, Floorp, Zen, Mullvad Browser |
+
+**Chrome and friends**
+
 1. Open `chrome://extensions` (Edge: `edge://extensions`, Brave: `brave://extensions`) and turn on **Developer mode**.
-2. Click **Load unpacked** and pick `dist/panemux` (or `extension/` while you're hacking on it).
+2. Click **Load unpacked** and pick `dist/chrome` (or `extension/` while you're hacking on it).
 3. The tutorial opens in a new tab. It takes about two minutes, and you can skip it.
 4. Reload tabs that were already open — content scripts only reach pages loaded after install.
+
+**Firefox and its forks**
+
+1. Open `about:debugging#/runtime/this-firefox`.
+2. Click **Load Temporary Add-on…** and pick `dist/firefox/manifest.json`. Firefox removes temporary
+   add-ons when it quits; for a permanent install, the zip has to be signed through addons.mozilla.org
+   (or use Firefox Developer Edition / Nightly with `xpinstall.signatures.required` set to `false`).
+3. If Firefox asks, allow PaneMux to access your data for all websites. If you skip that, the tutorial and
+   Settings show an **Allow on all websites** button, since nothing works on pages without it.
 
 ## Turning it off
 
 - **Click the toolbar button** to pause PaneMux on the current site (the icon greys out and shows `II`). Click again to resume. `Alt+Shift+P` does the same.
-- **Right-click the toolbar button** for "Turn off everywhere", Settings, and the tutorial.
+- **Right-click the toolbar button** (Firefox: right-click it, or use the extensions menu) for "Turn off everywhere", Settings, and the tutorial.
 - Paused sites are listed in Settings, where you can resume them.
 - Clicking into any text box, editor or search field hands the keyboard to the page automatically; the status strip says **Insert**. `Esc` gives it back.
 
