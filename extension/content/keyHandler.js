@@ -12,12 +12,16 @@
 //   OPERATOR   operator typed, waiting for its motion / text object ("d" of "dap")
 //
 // Bindings live in one trie per mode. A trie node can be both a complete
-// binding and a prefix of a longer one (e.g. later phases add "dap" while "d"
-// already scrolls); the FSM then waits `ambiguousTimeout` ms before firing the
-// shorter one, like Vim's 'timeoutlen'.
+// binding and a prefix of a longer one ("d" scrolls, "dap" hides a
+// paragraph); the FSM then waits `ambiguousTimeout` ms before firing the
+// shorter one, like Vim's 'timeoutlen'. Commands that can take themselves
+// back (they define snapshot/revert) don't wait: they run at once, and if the
+// longer binding completes, they're reverted first. So "d" still scrolls the
+// instant it's pressed.
 //
 // Extension points for later phases:
 //   Keys.defineCommand(name, fn, opts)   action/motion implementation
+//     opts.snapshot(ctx) / opts.revert(snap, ctx)   lets it run eagerly (see above)
 //   Keys.map(modes, keys, command, opts) bind key sequence -> command
 //   Keys.defineOperator(name, fn)        operator; map it with { operator: true }
 //   Keys.map(..., { motion: true })      usable as operator target
@@ -46,6 +50,7 @@ PaneMux.Keys = (() => {
   let ambiguityTimer = null;
   let opPrevMode = null;
   let filter = () => true; // binding -> usable? (feature presets)
+  let eager = null;        // { binding, ctx, snap } ran early; a longer match reverts it
 
   const newNode = () => ({ children: Object.create(null), binding: null });
 
@@ -151,6 +156,9 @@ PaneMux.Keys = (() => {
 
   function reset() {
     clearTimer();
+    // Nothing longer came along: the eager command stands, so now tell
+    // observers (macros, the trail, Vimgolf) about it.
+    if (eager) { const e = eager; eager = null; notify(e.ctx); }
     const wasOperator = !!op;
     state = S.IDLE; count = ""; keys = []; node = null; charBinding = null; op = null; opCount = "";
     if (wasOperator && PaneMux.Modes.current === "operator") PaneMux.Modes.enter(opPrevMode || "normal");
@@ -174,9 +182,32 @@ PaneMux.Keys = (() => {
     return (own && own.children[k]) || (fallback && fallback.children[k]) || null;
   }
 
-  function run(binding, char, event) {
+  function makeCtx(binding, char, event) {
     const n1 = count ? parseInt(count, 10) : null;
-    const ctx = { count: n1 || 1, hasCount: n1 !== null, char, keys: binding.keys, binding, event, mode: PaneMux.Modes.current };
+    return { count: n1 || 1, hasCount: n1 !== null, char, keys: binding.keys, binding, event, mode: PaneMux.Modes.current };
+  }
+
+  // "d" of "dap": run it now, keep walking the trie.
+  function runEager(binding, event) {
+    const cmd = commands[binding.command];
+    const ctx = makeCtx(binding, undefined, event);
+    const snap = cmd.snapshot(ctx);
+    eager = { binding, ctx, snap };
+    invoke(cmd.fn, ctx, false);
+  }
+
+  // A longer binding won: undo what the eager one did, silently.
+  function takeBackEager() {
+    if (!eager) return;
+    const e = eager;
+    eager = null;
+    try { commands[e.binding.command].revert(e.snap, e.ctx); } catch (err) { console.error("PaneMux:", err); }
+  }
+
+  function run(binding, char, event) {
+    takeBackEager();
+    const n1 = count ? parseInt(count, 10) : null;
+    const ctx = makeCtx(binding, char, event);
 
     if (op) {
       // Operator + motion/text object: counts multiply ("2d3j" = 6).
@@ -198,8 +229,12 @@ PaneMux.Keys = (() => {
     invoke(cmd.fn, ctx);
   }
 
-  function invoke(fn, ctx) {
+  function notify(ctx) {
     dispatchListeners.forEach((l) => { try { l(ctx); } catch (e) {} });
+  }
+
+  function invoke(fn, ctx, announce = true) {
+    if (announce) notify(ctx);
     try {
       const r = fn(ctx);
       if (r && typeof r.catch === "function") r.catch((e) => console.error("PaneMux:", e));
@@ -278,7 +313,13 @@ PaneMux.Keys = (() => {
 
     if (binding) {
       const timeout = (PaneMux.Settings && PaneMux.Settings.get("ambiguousTimeout")) || 1000;
-      ambiguityTimer = setTimeout(() => { ambiguityTimer = null; accept(binding); }, timeout);
+      const cmd = commands[binding.command];
+      if (!op && !binding.arg && !binding.operator && cmd && cmd.snapshot && cmd.revert) {
+        runEager(binding, event);
+        ambiguityTimer = setTimeout(() => { ambiguityTimer = null; reset(); }, timeout);
+      } else {
+        ambiguityTimer = setTimeout(() => { ambiguityTimer = null; accept(binding); }, timeout);
+      }
     }
     return true;
   }

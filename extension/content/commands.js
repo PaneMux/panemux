@@ -9,7 +9,10 @@
   def("scrollUp",       ({ count, event }) => PaneMux.Scroll.by(0, -step() * count, event), { desc: "Scroll up" });
   def("scrollLeft",     ({ count, event }) => PaneMux.Scroll.by(-step() * count, 0, event), { desc: "Scroll left" });
   def("scrollRight",    ({ count, event }) => PaneMux.Scroll.by(step() * count, 0, event), { desc: "Scroll right" });
-  def("scrollHalfDown", ({ count, event }) => PaneMux.Scroll.by(0, (PaneMux.Scroll.viewportHeight() / 2) * count, event), { desc: "Scroll half a page down" });
+  // "d" also starts text objects ("dap"), so it runs at once and gets put back
+  // if the longer key completes (see keyHandler.js).
+  const takeBack = { snapshot: () => PaneMux.Scroll.snapshot(), revert: (snap) => PaneMux.Scroll.restore(snap) };
+  def("scrollHalfDown", ({ count, event }) => PaneMux.Scroll.by(0, (PaneMux.Scroll.viewportHeight() / 2) * count, event), { desc: "Scroll half a page down", ...takeBack });
   def("scrollHalfUp",   ({ count, event }) => PaneMux.Scroll.by(0, -(PaneMux.Scroll.viewportHeight() / 2) * count, event), { desc: "Scroll half a page up" });
   def("scrollToTop",    ({ event }) => PaneMux.Scroll.to({ y: 0 }, event), { desc: "Scroll to top" });
   def("scrollToBottom", ({ event }) => PaneMux.Scroll.to({ y: Infinity }, event), { desc: "Scroll to bottom" });

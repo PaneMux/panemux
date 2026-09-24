@@ -118,6 +118,16 @@ PaneMux.Scroll = (() => {
     return el === se ? innerHeight : el.clientHeight;
   }
 
+  // Where the vertical scroller is headed (its animation target if it's
+  // moving), so an eagerly-run scroll can be put back exactly.
+  function snapshot() {
+    const el = target("y");
+    return anim && anim.el === el ? { el, left: anim.left, top: anim.top } : { el, left: el.scrollLeft, top: el.scrollTop };
+  }
+  function restore(snap, event) {
+    if (snap && snap.el.isConnected) scrollEl(snap.el, snap.left, snap.top, smooth(event));
+  }
+
   function position() {
     const el = target("y");
     return { x: el.scrollLeft, y: el.scrollTop };
@@ -128,6 +138,8 @@ PaneMux.Scroll = (() => {
     to,
     viewportHeight,
     position,
+    snapshot,
+    restore,
     target,
     setActivated: (el) => { activated = el; },
     get activated() { return activated; },

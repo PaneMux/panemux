@@ -155,3 +155,57 @@ test("filtered-out bindings pass to the page; prefixes with no usable child too"
   assert.deepEqual(feed("g"), [false]);                    // nothing under g is usable any more
   PaneMux.Keys.setFilter(() => true);
 });
+
+// "d" scrolls and "dap" is a text object: d runs at once instead of waiting.
+function eagerSetup() {
+  const log = [];
+  const seen = [];
+  PaneMux.Keys.defineCommand("halfDown", (c) => log.push(`half x${c.count}`), {
+    snapshot: () => "pos-before",
+    revert: (snap) => log.push(`revert to ${snap}`),
+  });
+  PaneMux.Keys.defineCommand("delPara", (c) => log.push(`dap x${c.count}`));
+  PaneMux.Keys.map("normal", "d", "halfDown");
+  PaneMux.Keys.map("normal", "dap", "delPara");
+  PaneMux.Keys.onDispatch((c) => seen.push(c.binding.command));
+  return { log, seen };
+}
+
+test("revertible command with a longer sibling runs immediately", () => {
+  const { log, seen } = eagerSetup();
+  feed("d");
+  assert.deepEqual(log, ["half x1"]);
+  assert.deepEqual(seen, []); // observers wait until it's final
+  assert.equal(PaneMux.Keys.pending, "d");
+});
+
+test("completing the longer binding reverts the eager one first", () => {
+  const { log, seen } = eagerSetup();
+  feed("2", "d", "a", "p");
+  assert.deepEqual(log, ["half x2", "revert to pos-before", "dap x2"]);
+  assert.deepEqual(seen, ["delPara"]); // the eager scroll is never reported
+});
+
+test("a different next key keeps the eager command and runs the key", () => {
+  const { log, seen } = eagerSetup();
+  feed("d", "j");
+  assert.deepEqual(log, ["half x1"]);
+  assert.deepEqual(seen, ["halfDown", "down"]);
+  assert.equal(calls[0].name, "down");
+});
+
+test("the eager command is confirmed after the timeout", async () => {
+  const { log, seen } = eagerSetup();
+  feed("d");
+  await new Promise((r) => setTimeout(r, 60));
+  assert.deepEqual(log, ["half x1"]);
+  assert.deepEqual(seen, ["halfDown"]);
+  assert.equal(PaneMux.Keys.pending, "");
+});
+
+test("Esc after an eager command keeps it", () => {
+  const { log, seen } = eagerSetup();
+  feed("d", "<esc>");
+  assert.deepEqual(log, ["half x1"]);
+  assert.deepEqual(seen, ["halfDown"]);
+});
