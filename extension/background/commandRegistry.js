@@ -161,6 +161,11 @@ registerCommand({
 });
 
 registerCommand({
+  name: "outline", aliases: ["minimap", "toc"], usage: ":outline", desc: "Show the page's headings as an outline to jump around (gO)",
+  run: () => ({ action: "minimap" }),
+});
+
+registerCommand({
   name: "macros",
   aliases: ["mac"],
   usage: ":macros",

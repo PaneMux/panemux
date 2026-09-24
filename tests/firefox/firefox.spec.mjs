@@ -376,3 +376,18 @@ test.describe("vimgolf", () => {
     await expect.poll(() => background(() => browser.storage.local.get("golfBoard").then((r) => (r.golfBoard || []).map((x) => [x.strokes, x.par])))).toEqual([[3, 4]]);
   });
 });
+
+test.describe("outline", () => {
+  test("gO lists the headings; j moves and the page follows; Esc goes back", async ({ page }) => {
+    await open(page, "outline.html");
+    await type(page, ["g", "Shift+O"]);
+    expect(await mode(page)).toBe("outline");
+    await expect.poll(() => hud(page, (r) => [...r.querySelectorAll(".minimap-item .text")].map((t) => t.textContent))).toEqual(["Field guide", "Birds", "Owls", "Herons", "Fish", "Trout", "Insects", "Appendix"]);
+    await page.screenshot({ path: "test-results/firefox-outline.png" });
+    await type(page, ["j", "j"]);
+    await expect.poll(() => scrollY(page)).toBeGreaterThan(500);
+    await page.keyboard.press("Escape");
+    expect(await waitScroll(page, (y) => y === 0)).toBe(0);
+    expect(await hud(page, (r) => !!r.querySelector(".minimap"))).toBe(false);
+  });
+});

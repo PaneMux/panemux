@@ -16,6 +16,7 @@ PaneMux.Features = (() => {
     { id: "undo",       label: "Undo history",    desc: "u and Ctrl-r for closed tabs, hidden elements and form edits" },
     { id: "splits",     label: "Splits",          desc: "Put two windows side by side and jump between them" },
     { id: "trail",      label: "Keystroke trail", desc: "Show the keys you press in the bottom-left corner" },
+    { id: "minimap",    label: "Outline",         desc: "gO shows the page's headings as a foldable outline to jump around" },
     { id: "vimgolf",    label: "Vimgolf",         desc: "Score your keys against the mouse clicks they save, with a leaderboard (:golf)" },
   ];
   const PRESETS = {
@@ -26,6 +27,7 @@ PaneMux.Features = (() => {
   // command name -> feature; anything unlisted is core (always on)
   const BY_COMMAND = {
     visualChange: "textObjects",
+    minimapToggle: "minimap",
     visualEnter: "visual",
     commandBar: "commandBar",
     macroRecord: "macros", macroPlay: "macros",

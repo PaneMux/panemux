@@ -442,6 +442,49 @@ kbd, .key {
 .tabov-list .host { color: var(--text-muted); font-size: var(--text-xs); max-width: 30%; overflow: hidden; text-overflow: ellipsis; }
 .tabov-foot { padding: 8px 16px; color: var(--text-muted); font-size: var(--text-xs); border-top: 1px solid var(--border-subtle); }
 
+/* ---- minimap: page outline (gO), left edge -------------------------------- */
+.minimap {
+  position: fixed;
+  left: 12px;
+  top: 12vh;
+  width: 280px;
+  max-height: 66vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  pointer-events: auto;
+  overflow: hidden;
+  animation: pmx-in var(--dur) var(--ease);
+  transition: width var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.minimap.focused { border-color: color-mix(in srgb, var(--mode-command) 55%, var(--border-subtle)); }
+.minimap-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 8px 8px 12px; border-bottom: 1px solid var(--border-subtle); user-select: none; }
+.minimap-head .title { font-weight: 600; white-space: nowrap; }
+.minimap .collapse { all: unset; cursor: pointer; color: var(--text-muted); font: 600 var(--text-md)/1 var(--font-ui); padding: 0 4px; }
+.minimap .collapse:hover { color: var(--text-primary); }
+.minimap-list { list-style: none; margin: 0; padding: 4px 0; overflow: auto; }
+.minimap-item { display: flex; align-items: baseline; gap: 4px; padding: 4px 12px 4px 10px; cursor: pointer; color: var(--text-muted); font-size: var(--text-sm); line-height: 1.35; border-left: 2px solid transparent; }
+.minimap-item[data-level="1"] { color: var(--text-primary); font-weight: 600; }
+.minimap-item:hover { background: color-mix(in srgb, var(--text-primary) 6%, transparent); }
+.minimap-item.current { color: var(--text-primary); border-left-color: var(--mode-normal); }
+.minimap-item.cursor { background: color-mix(in srgb, var(--mode-command) 14%, transparent); color: var(--text-primary); }
+.minimap-item .twisty { flex: none; width: 12px; font-size: 10px; color: var(--text-muted); }
+.minimap-item .text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.minimap-empty { padding: 12px; color: var(--text-muted); font-size: var(--text-sm); }
+.minimap-foot { padding: 6px 12px; border-top: 1px solid var(--border-subtle); color: var(--text-muted); font-size: var(--text-xs); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.minimap:not(.focused) .minimap-foot { display: none; }
+.minimap-tab { all: unset; display: none; }
+/* folded away: a slim tab showing the section you're in */
+.minimap.collapsed { width: 36px; max-height: 40vh; }
+.minimap.collapsed .minimap-head, .minimap.collapsed .minimap-list, .minimap.collapsed .minimap-foot { display: none; }
+.minimap.collapsed .minimap-tab {
+  display: block; cursor: pointer; padding: 12px 10px;
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  font-size: var(--text-xs); color: var(--text-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-height: 38vh;
+}
+.minimap.collapsed .minimap-tab:hover { color: var(--text-primary); }
+
 /* ---- undo-tree side panel (U) ---------------------------------------------- */
 .undopanel {
   position: fixed;

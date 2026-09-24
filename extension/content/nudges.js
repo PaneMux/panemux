@@ -17,6 +17,7 @@ PaneMux.Nudges = (() => {
     hints: "Type the letters on a link to click it. Esc to cancel",
     find: "Type to search, Enter to keep it. Esc to cancel",
     tabs: "Tab list — j / k to move. Esc to close",
+    outline: "Outline — j / k to move, Enter to go there. Esc to go back",
   };
   const STUCK_KEYS = 6;
   const STUCK_WINDOW = 3000;

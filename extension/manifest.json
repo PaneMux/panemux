@@ -51,6 +51,7 @@
         "content/textObjects.js",
         "content/vimgolf.js",
         "ui/undoPanel.js",
+        "ui/minimap.js",
         "ui/help.js",
         "content/commands.js",
         "content/nudges.js",

@@ -171,6 +171,7 @@ PaneMux.CommandPalette = (() => {
     if (res.ok && res.confirm) return confirmClose(res.confirm);
     if (!res.ok) PaneMux.HUD.toast(res.error || "Command failed", { error: true, duration: 3000 });
     else if (res.action === "undoPanel") PaneMux.UndoPanel.toggle();
+    else if (res.action === "minimap") PaneMux.Minimap.toggle();
     else if (res.output) PaneMux.Output.show(res.output);
     else if (res.message) PaneMux.HUD.toast(res.message);
     return res;

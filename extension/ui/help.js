@@ -19,6 +19,7 @@ PaneMux.Help = (() => {
     find: ["Move", "Search this page"],
     findNext: ["Move", "Next search match"],
     findPrev: ["Move", "Previous search match"],
+    minimapToggle: ["Move", "Outline of the page's headings: jump to any section"],
     setMark: ["Move", "Remember this spot (then press a letter)"],
     jumpMark: ["Move", "Go back to a remembered spot (then press its letter)"],
     linkHints: ["Click", "Click a link or button by typing its letters"],
