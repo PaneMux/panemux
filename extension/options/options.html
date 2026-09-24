@@ -67,6 +67,11 @@
     <label class="row" data-search="timeout ambiguous keys"><span>Wait for a longer key<small>Milliseconds, when one key starts another (like g / gg)</small></span><input type="number" id="ambiguousTimeout" min="100" max="5000"></label>
   </div>
 
+  <h2>Vimgolf</h2>
+  <div class="panel settings">
+    <label class="row" data-search="vimgolf golf leaderboard sync devices"><span>Sync the leaderboard<small>Share your best rounds between your own devices (browser sync). Off: they stay on this device</small></span><input type="checkbox" id="golfSync"></label>
+  </div>
+
   <h2>Paused sites</h2>
   <div class="panel">
     <ul class="sites" id="sites"></ul>
@@ -104,6 +109,7 @@
 <script src="../content/macro.js"></script>
 <script src="../content/undo.js"></script>
 <script src="../content/textObjects.js"></script>
+<script src="../content/vimgolf.js"></script>
 <script src="../ui/undoPanel.js"></script>
 <script src="../ui/help.js"></script>
 <script src="../content/commands.js"></script>

@@ -15,6 +15,7 @@
     e.stopImmediatePropagation();
     suppressedKeyups.add(e.code);
     if (PaneMux.Nudges) PaneMux.Nudges.touchDay();
+    PaneMux.Bus.emit("stroke"); // Vimgolf counts every key PaneMux takes
   }
 
   const ownFocus = () => HUD.owns(Dom.activeElement());
@@ -40,6 +41,7 @@
         else if (PaneMux.Nudges) PaneMux.Nudges.invalidKey(key);
       } else if (r === "input") {
         e.stopImmediatePropagation(); // typing into our own input: keep it from page shortcuts
+        PaneMux.Bus.emit("stroke");
       }
       return;
     }

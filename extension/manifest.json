@@ -49,6 +49,7 @@
         "content/macro.js",
         "content/undo.js",
         "content/textObjects.js",
+        "content/vimgolf.js",
         "ui/undoPanel.js",
         "ui/help.js",
         "content/commands.js",

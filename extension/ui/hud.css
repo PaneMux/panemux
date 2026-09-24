@@ -331,6 +331,28 @@ kbd, .key {
 }
 .vsel.flash { animation: pmx-flash 300ms var(--ease); }
 
+/* ---- Vimgolf scorecard (top-right) -------------------------------------------- */
+.golf {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 232px;
+  padding: 10px 14px 12px;
+  pointer-events: none;
+  animation: pmx-in var(--dur) var(--ease);
+}
+.golf-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.golf-title { font: 600 var(--text-xs)/1 var(--font-ui); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+.golf-live { font-size: var(--text-xs); color: var(--mode-normal); }
+.golf-live::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: currentColor; vertical-align: 1px; }
+.golf-nums { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 8px; }
+.golf-nums div { display: flex; flex-direction: column; gap: 2px; }
+.golf-nums b { font: 700 var(--text-lg)/1 var(--font-mono); color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.golf-nums span { font-size: var(--text-xs); color: var(--text-muted); }
+.golf.under .golf-score b { color: var(--mode-normal); }
+.golf.over .golf-score b { color: var(--mode-operator); }
+.golf-last { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-subtle); font: 400 var(--text-xs)/1.3 var(--font-mono); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 /* text objects: a brief outline on what was copied / edited */
 .tobj-flash {
   position: fixed;

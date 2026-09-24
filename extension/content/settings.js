@@ -24,7 +24,8 @@ PaneMux.Settings = (() => {
     openNewTabInBackground: true, // F opens links in a background tab (Vimium default)
     ambiguousTimeout: 1000,   // ms to wait when a key is both a full binding and a prefix
     uKey: "undo",             // with undo on: "undo" or "scroll" (Vimium's half page up)
-    confirmBulkClose: true,   // preview before closing 2+ tabs (always on in Classic)
+    confirmBulkClose: true,
+    golfSync: false,          // mirror the Vimgolf leaderboard to your other devices   // preview before closing 2+ tabs (always on in Classic)
   };
 
   let values = { ...DEFAULTS };

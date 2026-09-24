@@ -16,6 +16,7 @@ PaneMux.Features = (() => {
     { id: "undo",       label: "Undo history",    desc: "u and Ctrl-r for closed tabs, hidden elements and form edits" },
     { id: "splits",     label: "Splits",          desc: "Put two windows side by side and jump between them" },
     { id: "trail",      label: "Keystroke trail", desc: "Show the keys you press in the bottom-left corner" },
+    { id: "vimgolf",    label: "Vimgolf",         desc: "Score your keys against the mouse clicks they save, with a leaderboard (:golf)" },
   ];
   const PRESETS = {
     classic: Object.fromEntries(LIST.map((f) => [f.id, false])),

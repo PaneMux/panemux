@@ -82,6 +82,7 @@ PaneMux.Macro = (() => {
 
   // ---- replay: execute one step ------------------------------------------
   async function exec(step) {
+    PaneMux.Bus.emit("replayStep", step);
     replaying++;
     try {
       switch (step.t) {

@@ -10,6 +10,7 @@ import { allRegisters, listTabRegisters } from "./registers.js";
 import { listMacros } from "./macroRecorder.js";
 import { split, closeSplit } from "./splits.js";
 import { closeTabs } from "./safety.js";
+import * as Golf from "./vimgolf.js";
 
 const commands = [];
 
@@ -72,10 +73,10 @@ export function globMatcher(pattern) {
 // describe: how the tabs were picked, shown in the close preview
 async function runTabAction(action, tabs, ctx, describe) {
   if (!(action in TAB_ACTIONS)) throw new Error(`Unknown tab action "${action || ""}" (use: ${ACTION_NAMES})`);
-  if (!tabs.length) return { message: "No matching tabs" };
-  if (action === "close") return closeTabs(tabs, { describe, notifyTabId: ctx.tab && ctx.tab.id });
+  if (!tabs.length) return { message: "No matching tabs", affected: 0 };
+  if (action === "close") return { ...(await closeTabs(tabs, { describe, notifyTabId: ctx.tab && ctx.tab.id })), affected: tabs.length };
   await TAB_ACTIONS[action](tabs);
-  return { message: `${PAST[action]} ${tabs.length} tab${tabs.length === 1 ? "" : "s"}` };
+  return { message: `${PAST[action]} ${tabs.length} tab${tabs.length === 1 ? "" : "s"}`, affected: tabs.length };
 }
 
 registerCommand({
@@ -175,5 +176,61 @@ registerCommand({
         rows: names.map((n) => [`@${n}`, String(macros[n].steps.length), macros[n].keys.join("").slice(0, 200)]),
       },
     };
+  },
+});
+
+// ---- Vimgolf -------------------------------------------------------------------
+async function golfEnabled() {
+  const { preset = "classic", features = {} } = await chrome.storage.sync.get({ preset: "classic", features: {} });
+  return preset === "power" || (preset === "custom" && !!features.vimgolf);
+}
+
+const signed = (n) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : "E"); // golf: under par is negative, E = even
+const verdict = (r) => {
+  const d = r.strokes - r.par;
+  return d < 0 ? `${-d} under par` : d > 0 ? `${d} over par` : "even par";
+};
+const when = (t) => new Date(t).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+
+registerCommand({
+  name: "golf",
+  aliases: ["vimgolf"],
+  usage: ":golf [board | clear]",
+  desc: "Score yourself: keys you press against the mouse clicks the same work would take. :golf again ends the round",
+  async run(args) {
+    if (!(await golfEnabled())) throw new Error("Vimgolf is off — switch it on in Settings (Power User, or Custom)");
+    const sub = args.trim();
+    if (sub === "board") {
+      const list = await Golf.board();
+      if (!list.length) return { message: "No finished rounds yet — :golf starts one" };
+      return {
+        output: {
+          title: "Vimgolf leaderboard",
+          columns: ["#", "When", "Strokes", "Par", "Score", "vs mouse"],
+          rows: list.map((r, i) => [String(i + 1), when(r.date), String(r.strokes), String(r.par), signed(r.strokes - r.par), `${Golf.ratio(r).toFixed(1)}×`]),
+        },
+      };
+    }
+    if (sub === "clear") {
+      await Golf.clear();
+      return { message: "Leaderboard cleared" };
+    }
+    if (sub && sub !== "start" && sub !== "stop") throw new Error("Usage: :golf, :golf board, :golf clear");
+    if (await Golf.running()) {
+      if (sub === "start") return { message: "A round is already going — :golf ends it" };
+      const res = await Golf.stop();
+      const r = res.round;
+      if (!r.strokes && !r.par) return { message: "Round over — nothing was scored" };
+      return {
+        output: {
+          title: `Round over: ${verdict(r)}${res.rank ? ` · #${res.rank} on your board` : ""}`,
+          columns: ["Strokes", "Par", "Score", "vs mouse", "Commands", "Minutes"],
+          rows: [[String(r.strokes), String(r.par), signed(r.strokes - r.par), `${Golf.ratio(r).toFixed(1)}×`, String(r.commands), String(r.minutes)]],
+        },
+      };
+    }
+    if (sub === "stop") return { message: "No round going — :golf starts one" };
+    await Golf.start();
+    return { message: "Vimgolf round started — every key counts. :golf again to finish" };
   },
 });

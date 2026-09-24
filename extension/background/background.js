@@ -1,6 +1,7 @@
 // PaneMux service worker: tab operations, global marks, ex-commands,
 // registers, macros, undo tree, splits.
-import { listCommands, execute } from "./commandRegistry.js";
+import { listCommands, execute, parse } from "./commandRegistry.js";
+import * as Golf from "./vimgolf.js";
 import { setRegister, setTabRegister, getTabRegister } from "./registers.js";
 import * as Undo from "./undoService.js";
 import { setupToolbar, stateFor, togglePause, openTutorial } from "./toolbar.js";
@@ -15,11 +16,17 @@ const handlers = {
 
   async "cmd.run"({ text, screen }, sender) {
     try {
-      return { ok: true, ...(await execute(text, { tab: sender.tab, screen })) };
+      const res = await execute(text, { tab: sender.tab, screen });
+      const { name } = parse(text);
+      if (name !== "golf" && (await Golf.running())) Golf.add({ par: Golf.exPar(name, res) + text.length, command: `:${name}` });
+      return { ok: true, ...res };
     } catch (e) {
       return { ok: false, error: e.message };
     }
   },
+
+  // ---- Vimgolf ----
+  "golf.add": (msg) => Golf.add(msg),
 
   async "reg.set"({ name, value, regType }) {
     await setRegister(name, value, regType);

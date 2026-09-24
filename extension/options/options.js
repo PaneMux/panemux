@@ -159,7 +159,7 @@ function setKey(r, keys, input) {
 
 // ---- plain settings -------------------------------------------------------
 
-const FIELDS = ["indicator", "modeHints", "scanlines", "smoothScroll", "scrollStep", "hintChars", "openNewTabInBackground", "uKey", "confirmBulkClose", "ambiguousTimeout"];
+const FIELDS = ["indicator", "modeHints", "scanlines", "smoothScroll", "scrollStep", "hintChars", "openNewTabInBackground", "uKey", "confirmBulkClose", "ambiguousTimeout", "golfSync"];
 
 function readField(el, key) {
   if (el.type === "checkbox") return el.checked;

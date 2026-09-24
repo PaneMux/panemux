@@ -362,3 +362,17 @@ test.describe("text objects", () => {
     await expect(page.locator("#p-usage")).toHaveText("Changed");
   });
 });
+
+test.describe("vimgolf", () => {
+  test(":golf starts a round with a scorecard; :golf again saves it to the board", async ({ page, background }) => {
+    await open(page);
+    await ex(page, "golf");
+    await expect.poll(() => hud(page, (r) => !!r.querySelector(".golf"))).toBe(true);
+    await type(page, ["j", "3", "j"]);
+    await expect.poll(() => hud(page, (r) => r.querySelector('.golf [data-k="par"]').textContent)).toBe("4");
+    expect(await hud(page, (r) => r.querySelector('.golf [data-k="strokes"]').textContent)).toBe("3");
+    await page.screenshot({ path: "test-results/firefox-golf.png" });
+    await ex(page, "golf");
+    await expect.poll(() => background(() => browser.storage.local.get("golfBoard").then((r) => (r.golfBoard || []).map((x) => [x.strokes, x.par])))).toEqual([[3, 4]]);
+  });
+});
