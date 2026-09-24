@@ -222,6 +222,8 @@
   $("close").addEventListener("click", () => window.close());
   $("open-settings").addEventListener("click", () => chrome.runtime.openOptionsPage());
 
+  PaneMux.SiteAccess.mount(document.querySelector(".stage"));
+
   show(0);
   window.PaneMuxTutorial = { get step() { return index; }, show, finish };
 })();

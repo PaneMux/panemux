@@ -65,6 +65,7 @@ button.ghost { background: transparent; color: var(--text-muted); border: 1px so
 
 .banner { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; padding: 12px 14px; border: 1px solid var(--border-subtle); border-left: 3px solid var(--mode-visual); border-radius: var(--radius-sm); background: var(--surface-raised); }
 .banner div { flex: 1; }
+.banner.access { border-left-color: var(--mode-insert); }
 
 .features { margin-top: 12px; padding: 4px 16px; }
 .features label { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }

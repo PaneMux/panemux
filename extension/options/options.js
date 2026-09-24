@@ -251,6 +251,8 @@ $("dismiss-nudge").addEventListener("click", async () => {
   renderNudge();
 });
 
+PaneMux.SiteAccess.mount(document.querySelector("main"));
+
 $("run-tutorial").addEventListener("click", () => chrome.tabs.create({ url: chrome.runtime.getURL("tutorial/tutorial.html") }));
 
 // ---- boot --------------------------------------------------------------------

@@ -84,6 +84,18 @@ button:focus-visible { outline: 2px solid var(--mode-command); outline-offset: 2
 .progress li.skipped .t { text-decoration: line-through; text-decoration-color: var(--border-subtle); }
 .rail-note { margin: 16px 10px 0; color: var(--text-muted); font-size: var(--text-xs); line-height: 1.5; }
 
+/* ---- "can't reach websites" (Firefox, when site access is withheld) ---- */
+.banner {
+  display: flex; gap: 12px; align-items: center;
+  margin-bottom: 16px; padding: 12px 14px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle); border-left: 3px solid var(--mode-insert);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+.banner div { flex: 1; color: var(--text-muted); }
+.banner b { color: var(--text-primary); }
+
 /* ---- lesson card ------------------------------------------------------------ */
 .card {
   position: sticky;
