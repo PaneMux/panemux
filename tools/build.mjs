@@ -1,7 +1,10 @@
-// Packages extension/ into dist/:
-//   dist/panemux/            unpacked folder for chrome://extensions -> "Load unpacked"
-//   dist/panemux-<ver>.zip   same files zipped (share / Chrome Web Store upload)
-// No dependencies: the zip writer below uses node:zlib.
+// Packages extension/ into dist/, once per browser:
+//   dist/chrome/                        unpacked, for chrome://extensions -> "Load unpacked"
+//   dist/panemux-chrome-<ver>.zip       Chrome, Edge, Brave, Opera, Vivaldi, Arc
+//   dist/firefox/                       unpacked, for about:debugging -> "Load Temporary Add-on"
+//   dist/panemux-firefox-<ver>.zip      Firefox and its forks (LibreWolf, Waterfox, Floorp, Zen)
+// The source manifest is the Chrome one; Firefox gets a few keys swapped (see
+// firefoxManifest). No dependencies: the zip writer below uses node:zlib.
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
@@ -10,14 +13,13 @@ import { fileURLToPath } from "node:url";
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const src = path.join(root, "extension");
 const dist = path.join(root, "dist");
-const outDir = path.join(dist, "panemux");
 
 const manifest = JSON.parse(fs.readFileSync(path.join(src, "manifest.json"), "utf8"));
 
 // Sanity-check that every file the manifest references exists.
 const referenced = [
   manifest.background.service_worker,
-  manifest.options_page,
+  manifest.options_ui.page,
   ...Object.values(manifest.icons),
   ...manifest.content_scripts.flatMap((c) => [...(c.js || []), ...(c.css || [])]),
 ];
@@ -34,14 +36,35 @@ function walk(dir) {
   });
 }
 
-fs.rmSync(outDir, { recursive: true, force: true });
-fs.mkdirSync(outDir, { recursive: true });
-const files = walk(src).filter((f) => !path.basename(f).startsWith("."));
-for (const f of files) {
-  const dest = path.join(outDir, path.relative(src, f));
-  fs.mkdirSync(path.dirname(dest), { recursive: true });
-  fs.copyFileSync(f, dest);
+// Firefox has no extension service workers: the same module runs as an event
+// page instead. It also wants an add-on id (storage.sync needs one) and, for
+// addons.mozilla.org, a data-collection declaration.
+export const GECKO_ID = "panemux@fd885aef-af0c-4b0e-81ed-db51fbf3509c";
+
+export function firefoxManifest(m) {
+  const f = structuredClone(m);
+  f.background = { scripts: [m.background.service_worker], type: "module" };
+  f.browser_specific_settings = {
+    gecko: {
+      id: GECKO_ID,
+      strict_min_version: "128.0",
+      data_collection_permissions: { required: ["none"] },
+    },
+  };
+  return f;
 }
+
+const TARGETS = {
+  chrome: { manifest: (m) => m },
+  firefox: {
+    manifest: firefoxManifest,
+    // Content-script CSS can't use relative URLs for extension files, so
+    // page.css spells out the extension's origin, which differs per browser.
+    rewrite: { "ui/page.css": (css) => css.replaceAll("chrome-extension://", "moz-extension://") },
+  },
+};
+
+const files = walk(src).filter((f) => !path.basename(f).startsWith("."));
 
 // ---- minimal zip writer (deflate) ------------------------------------------
 const CRC_TABLE = new Uint32Array(256).map((_, n) => {
@@ -99,10 +122,32 @@ function zip(entries) {
   return Buffer.concat([...locals, ...centrals, end]);
 }
 
-const zipPath = path.join(dist, `panemux-${manifest.version}.zip`);
-const entries = files.map((f) => ({ name: path.relative(src, f).split(path.sep).join("/"), data: fs.readFileSync(f) }));
-fs.writeFileSync(zipPath, zip(entries));
+export function build(target, outDir = path.join(dist, target)) {
+  const entries = files.map((f) => {
+    const name = path.relative(src, f).split(path.sep).join("/");
+    const { manifest: toManifest, rewrite = {} } = TARGETS[target];
+    let data = name === "manifest.json"
+      ? Buffer.from(JSON.stringify(toManifest(manifest), null, 2) + "\n")
+      : fs.readFileSync(f);
+    if (rewrite[name]) data = Buffer.from(rewrite[name](data.toString("utf8")));
+    return { name, data };
+  });
+  fs.rmSync(outDir, { recursive: true, force: true });
+  for (const { name, data } of entries) {
+    const dest = path.join(outDir, name);
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.writeFileSync(dest, data);
+  }
+  return { outDir, entries };
+}
 
-console.log(`Built PaneMux ${manifest.version}
-  unpacked: ${outDir}
-  zip:      ${zipPath} (${entries.length} files)`);
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  fs.rmSync(path.join(dist, "panemux"), { recursive: true, force: true }); // pre-0.6 layout
+  console.log(`Built PaneMux ${manifest.version}`);
+  for (const target of Object.keys(TARGETS)) {
+    const { outDir, entries } = build(target);
+    const zipPath = path.join(dist, `panemux-${target}-${manifest.version}.zip`);
+    fs.writeFileSync(zipPath, zip(entries));
+    console.log(`  ${target.padEnd(8)} ${path.relative(root, outDir)}  +  ${path.relative(root, zipPath)} (${entries.length} files)`);
+  }
+}
