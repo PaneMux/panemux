@@ -3,7 +3,8 @@
 // chevron collapses it to a slim strip. Open/collapsed state persists.
 PaneMux.UndoPanel = (() => {
   const ROW = 22, COL = 14, PAD = 10, R = 4.5;
-  const KIND_COLOR = { root: "#39ff14", close: "#ff3b5c", hide: "#ff2eb0", edit: "#ff9500" };
+  // mode accents from tokens.css: hides read as Visual, edits as Insert
+  const KIND_COLOR = { root: "#34D399", close: "#FB7185", hide: "#A78BFA", hides: "#A78BFA", edit: "#FBBF24", html: "#FBBF24" };
   const bg = (msg) => chrome.runtime.sendMessage(msg).catch(() => null);
   const svgNS = "http://www.w3.org/2000/svg";
   let panel = null, body = null;

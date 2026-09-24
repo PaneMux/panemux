@@ -4,6 +4,8 @@
 //   close  { tabs: [{ url, title, index, windowId, pinned, newId? }] }   tabs closed (batched ~400ms)
 //   hide   { tabId, url, desc }                                         Visual "d"
 //   edit   { tabId, url, desc, before, after, prop }                    form field change
+//   hides  { tabId, url, items: [{ desc, value, priority }] }           text object "da…"
+//   html   { tabId, url, items: [{ desc, before, after }] }             text object "di…", "c…"
 //
 // Tree lives in chrome.storage.session: memory only (never written to disk),
 // survives service-worker restarts, gone when the browser quits. Form values
@@ -152,7 +154,7 @@ async function apply({ node, dir }) {
   if (tab.status === "loading") await sleep(300);
   const res = await sendReady(tab.id, { type: "undo.apply", node: { id: node.id, kind: node.kind, data: d }, dir });
   if (res && res.ok === false) throw new Error(res.error);
-  if (node.kind === "hide" || node.kind === "edit") d.tabId = tab.id; // follow the page if it moved tabs
+  d.tabId = tab.id; // follow the page if it moved tabs
 }
 
 async function run(fn, emptyMsg) {

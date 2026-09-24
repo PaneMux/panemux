@@ -5,8 +5,8 @@
 //   u  undo       C-r  redo       g- / g+  step through time across branches
 //   U  toggle the undo-tree side panel
 //
-// Recorded here: Visual-mode hides and form-field edits. Closed tabs are
-// recorded by the service worker directly.
+// Recorded here: Visual-mode hides, form-field edits and text-object changes
+// (textObjects.js). Closed tabs are recorded by the service worker directly.
 PaneMux.Undo = (() => {
   const bg = (msg) => chrome.runtime.sendMessage(msg).catch(() => null);
   const els = new Map(); // node id -> WeakRef(element), exact target while the page lives
@@ -46,6 +46,35 @@ PaneMux.Undo = (() => {
       delete el.dataset.pmxHidden;
       if (!el.getAttribute("style")) el.removeAttribute("style");
     }
+  }
+
+  // ---- text objects: several hides, or innerHTML changes, as one step ----------
+  //   hides  { items: [{ desc, value, priority }] }     dap, dah
+  //   html   { items: [{ desc, before, after }] }       dip, cit
+  const itemEls = new Map(); // node id -> [WeakRef(element)] in item order
+
+  async function record(kind, label, data, els) {
+    const r = await bg({ type: "undo.push", kind, label, data });
+    if (r) itemEls.set(r.id, els.map((el) => new WeakRef(el)));
+    return r && r.id;
+  }
+
+  function itemTargets(node) {
+    const refs = itemEls.get(node.id) || [];
+    return node.data.items.map((item, i) => {
+      const el = refs[i] && refs[i].deref();
+      return el && el.isConnected ? el : PaneMux.DomSelector.resolve(item.desc);
+    });
+  }
+
+  function applyItems(node, dir) {
+    const els = itemTargets(node);
+    if (els.some((el) => !el)) throw new Error(`element for "${node.label}" not found on this page`);
+    node.data.items.forEach((item, i) => {
+      if (node.kind === "hides") setHidden(els[i], dir === "redo", item);
+      else els[i].innerHTML = dir === "undo" ? item.before : item.after;
+    });
+    els[0].scrollIntoView({ block: "nearest" });
   }
 
   // ---- form edits ------------------------------------------------------------
@@ -99,6 +128,7 @@ PaneMux.Undo = (() => {
 
   // ---- apply (from the service worker) --------------------------------------
   function apply({ node, dir }) {
+    if (node.kind === "hides" || node.kind === "html") { applyItems(node, dir); return; }
     const el = target(node);
     if (!el) throw new Error(`element for "${node.kind}" not found on this page`);
     if (node.kind === "hide") {
@@ -155,5 +185,5 @@ PaneMux.Undo = (() => {
   PaneMux.Settings.ready.then(applyUKey);
   PaneMux.Settings.onChange(applyUKey);
 
-  return { recordHide, setHidden };
+  return { recordHide, setHidden, record, toast: undoToast };
 })();
