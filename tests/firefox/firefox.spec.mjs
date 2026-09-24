@@ -18,6 +18,13 @@ async function ex(page, text) {
 const tabCount = (background) => background(() => browser.tabs.query({}).then((t) => t.length));
 
 test.describe("install", () => {
+  test("closing the add-on's own pages stays out of the undo history", async ({ background }) => {
+    // the fixture already closed the tutorial tab
+    await new Promise((r) => setTimeout(r, 800)); // closes are batched
+    const labels = await background(() => browser.storage.session.get("undoTree").then((r) => Object.values(r.undoTree?.nodes || {}).map((n) => n.label || n.kind)));
+    expect(labels.filter((l) => /Welcome to PaneMux/.test(l))).toEqual([]);
+  });
+
   test.use({ pmxSettings: {} });
 
   test("the Firefox build installs and opens the tutorial with its HUD", async ({ ff }) => {

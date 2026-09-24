@@ -71,7 +71,7 @@ async function flushCloses() {
   const batch = pendingClose;
   pendingClose = [];
   // Browser and extension pages (including our own settings/tutorial) stay out of history.
-  const tabs = batch.filter((t) => t.url && !/^(chrome|chrome-extension|edge|about|devtools):/.test(t.url));
+  const tabs = batch.filter((t) => t.url && !/^(chrome|chrome-extension|moz-extension|edge|about|devtools|view-source):/.test(t.url));
   if (!tabs.length) return;
   const label = tabs.length === 1 ? `close ${tabs[0].title || tabs[0].url}` : `close ${tabs.length} tabs`;
   const id = await push("close", label, { tabs: tabs.map(({ notify, ...t }) => t) });
