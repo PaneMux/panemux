@@ -155,7 +155,7 @@ aren't bound at all, so they reach the page untouched.
 
 ## 3. Technical Architecture
 
-**Manifest V3**, permissions: `tabs`, `storage`, `scripting`, `activeTab`, `clipboardWrite`, `contextMenus`
+**Manifest V3**, permissions: `tabs`, `storage`, `clipboardWrite`, `contextMenus`, host access to all sites
 (splits use `chrome.windows`, which needs no permission of its own).
 
 ```
