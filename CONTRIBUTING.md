@@ -23,6 +23,14 @@ background module runs as an event page instead of a service worker, and the man
 Keep using `chrome.*` (Firefox supports it, promises included) and avoid Chrome-only APIs; if you really
 need one, feature-check it.
 
+## Releases
+
+`.github/workflows/build.yml` runs the unit tests and builds both packages on every push and pull
+request, and runs the end-to-end suites in Chromium and Firefox alongside. Pushes to `main` refresh the
+**nightly** pre-release. To cut a release, bump `version` in `extension/manifest.json` and
+`package.json`, commit, then tag it: `git tag v0.6.0 && git push origin v0.6.0`. The workflow refuses a
+tag that doesn't match the manifest.
+
 ## Where things live
 
 - `extension/content/keyHandler.js` — the key state machine. New keys go through `PaneMux.Keys.defineCommand`

@@ -23,9 +23,23 @@ The feature spec and roadmap live in [`panemux-spec.md`](panemux-spec.md). Visua
 [`panemux-ux-guidelines.md`](panemux-ux-guidelines.md). Every phase on the roadmap is built, including
 Firefox support.
 
-## Install
+## Download
 
-PaneMux isn't on the Chrome Web Store or addons.mozilla.org yet. Build it and load it yourself:
+PaneMux isn't on the Chrome Web Store or addons.mozilla.org yet, but every build is ready to load:
+
+- **[Latest release](https://github.com/PaneMux/panemux/releases/latest)** — tagged versions.
+- **[Nightly](https://github.com/PaneMux/panemux/releases/tag/nightly)** — rebuilt from `main` on every push.
+
+Each has `panemux-chrome-<version>.zip` (Chrome, Edge, Brave, Opera, Vivaldi, Arc) and
+`panemux-firefox-<version>.zip` (Firefox and its forks), with install steps in the release notes. In
+short: unzip the Chrome one and **Load unpacked** it from `chrome://extensions` with Developer mode on;
+load the Firefox zip as-is from `about:debugging` → **Load Temporary Add-on**.
+
+Every pull request's build is also attached to its CI run (the **Actions** tab → the run → *Artifacts*).
+
+## Install from source
+
+Build it and load it yourself:
 
 ```sh
 npm install
