@@ -78,6 +78,10 @@ const crc32 = (buf) => {
   return (c ^ 0xffffffff) >>> 0;
 };
 
+// Fixed timestamp (1980-01-01) so builds are reproducible; an all-zero date
+// is month 0, which strict unzippers reject.
+const DOS_DATE = (0 << 9) | (1 << 5) | 1;
+
 function zip(entries) {
   const locals = [], centrals = [];
   let offset = 0;
@@ -90,7 +94,8 @@ function zip(entries) {
     local.writeUInt16LE(20, 4);         // version needed
     local.writeUInt16LE(0x0800, 6);     // UTF-8 names
     local.writeUInt16LE(8, 8);          // deflate
-    local.writeUInt32LE(0, 10);         // time/date
+    local.writeUInt16LE(0, 10);         // time 00:00
+    local.writeUInt16LE(DOS_DATE, 12);  // date
     local.writeUInt32LE(crc, 14);
     local.writeUInt32LE(deflated.length, 18);
     local.writeUInt32LE(data.length, 22);
@@ -103,7 +108,8 @@ function zip(entries) {
     central.writeUInt16LE(20, 6);
     central.writeUInt16LE(0x0800, 8);
     central.writeUInt16LE(8, 10);
-    central.writeUInt32LE(0, 12);
+    central.writeUInt16LE(0, 12);
+    central.writeUInt16LE(DOS_DATE, 14);
     central.writeUInt32LE(crc, 16);
     central.writeUInt32LE(deflated.length, 20);
     central.writeUInt32LE(data.length, 24);
