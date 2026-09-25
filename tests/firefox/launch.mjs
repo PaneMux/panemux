@@ -157,7 +157,8 @@ async function addonTargets(client, id) {
 }
 
 // Returns a persistent Firefox context with the add-on installed and running.
-export async function launchFirefox({ headless = !process.env.HEADED, viewport = { width: 1200, height: 800 }, prefs = {} } = {}) {
+// addonPath: install this instead of a fresh build (e.g. a release zip).
+export async function launchFirefox({ headless = !process.env.HEADED, viewport = { width: 1200, height: 800 }, prefs = {}, addonPath = null } = {}) {
   const extDir = path.join(root, "test-results", "firefox-ext");
   build("firefox", extDir);
   const port = await freePort();
@@ -177,7 +178,7 @@ export async function launchFirefox({ headless = !process.env.HEADED, viewport =
     },
   });
   const client = await debuggerClient(port);
-  const id = await installAddon(client, extDir);
+  const id = await installAddon(client, addonPath || extDir);
   const targets = await addonTargets(client, id);
   const background = await targets.find(/_generated_background_page/);
   context.pmxCleanup = () => {
