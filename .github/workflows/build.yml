@@ -33,6 +33,8 @@ jobs:
       - run: npm ci
       - run: npm run test:unit
       - run: npm run build
+      # Mozilla's addons-linter, the same check addons.mozilla.org runs on upload
+      - run: npx web-ext lint --source-dir dist/firefox --warnings-as-errors
 
       - name: Read the version
         id: version

@@ -9,10 +9,13 @@
     "test:e2e": "playwright test --project=chromium",
     "test:firefox": "playwright test --project=firefox",
     "icons": "node tools/make-icons.mjs",
-    "build": "node tools/build.mjs"
+    "build": "node tools/build.mjs",
+    "package:amo": "node tools/package-amo.mjs",
+    "screenshots": "node tools/store-screenshots.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0"
+    "@playwright/test": "^1.63.0",
+    "web-ext": "^10.7.0"
   },
   "license": "MIT",
   "repository": {
