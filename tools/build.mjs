@@ -47,9 +47,11 @@ export function firefoxManifest(m) {
   f.browser_specific_settings = {
     gecko: {
       id: GECKO_ID,
-      strict_min_version: "128.0",
+      // 140 is the first release (and an ESR) that knows data_collection_permissions
+      strict_min_version: "140.0",
       data_collection_permissions: { required: ["none"] },
     },
+    gecko_android: { strict_min_version: "142.0" },
   };
   return f;
 }

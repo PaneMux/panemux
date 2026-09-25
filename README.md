@@ -51,7 +51,7 @@ That writes one package per browser family:
 | Folder / zip | Browsers |
 |---|---|
 | `dist/chrome/`, `dist/panemux-chrome-<version>.zip` | Chrome, Edge, Brave, Opera, Vivaldi, Arc |
-| `dist/firefox/`, `dist/panemux-firefox-<version>.zip` | Firefox 128+ and its forks: LibreWolf, Waterfox, Floorp, Zen, Mullvad Browser |
+| `dist/firefox/`, `dist/panemux-firefox-<version>.zip` | Firefox 140+ and its forks: LibreWolf, Waterfox, Floorp, Zen, Mullvad Browser |
 
 **Chrome and friends**
 

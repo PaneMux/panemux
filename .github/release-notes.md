@@ -3,7 +3,7 @@
 | File | Browsers |
 |---|---|
 | `panemux-chrome-{{VERSION}}.zip` | Chrome, Edge, Brave, Opera, Vivaldi, Arc |
-| `panemux-firefox-{{VERSION}}.zip` | Firefox 128+, LibreWolf, Waterfox, Floorp, Zen, Mullvad Browser |
+| `panemux-firefox-{{VERSION}}.zip` | Firefox 140+, LibreWolf, Waterfox, Floorp, Zen, Mullvad Browser |
 
 ### Chrome and friends
 
