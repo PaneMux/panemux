@@ -57,7 +57,7 @@ test.describe("site access withheld", () => {
     expect(await page.evaluate(() => !!document.querySelector("panemux-hud"))).toBe(false);
     await ff.background((u) => browser.tabs.create({ url: u }), `${EXT_ORIGIN}/options/options.html`);
     const s = await ff.extPage("options/");
-    await expect.poll(() => s(() => [typeof PaneMux.SiteAccess, document.getElementById("site-access")?.hidden])).toEqual(["object", false]);
+    await expect.poll(() => s(() => [typeof window.PaneMux?.SiteAccess, document.getElementById("site-access")?.hidden])).toEqual(["object", false]);
     expect(await s(() => document.getElementById("grant-access").textContent)).toBe("Allow on all websites");
   });
 });
@@ -66,7 +66,7 @@ test.describe("site access granted", () => {
   test("no banner", async ({ ff }) => {
     await ff.background((u) => browser.tabs.create({ url: u }), `${EXT_ORIGIN}/options/options.html`);
     const s = await ff.extPage("options/");
-    await expect.poll(() => s(() => document.getElementById("site-access")?.hidden)).toBe(true);
+    await expect.poll(() => s(() => !!window.PaneMux?.SiteAccess && document.getElementById("site-access")?.hidden)).toBe(true);
   });
 });
 
