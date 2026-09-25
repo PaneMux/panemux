@@ -5,7 +5,7 @@
 //   hide   { tabId, url, desc }                                         Visual "d"
 //   edit   { tabId, url, desc, before, after, prop }                    form field change
 //   hides  { tabId, url, items: [{ desc, value, priority }] }           text object "da…"
-//   html   { tabId, url, items: [{ desc, before, after }] }             text object "di…", "c…"
+//   html   { tabId, url, items: [{ desc }] }  text object "di…", "c…" (the content itself stays in the page)
 //
 // Tree lives in chrome.storage.session: memory only (never written to disk),
 // survives service-worker restarts, gone when the browser quits. Form values

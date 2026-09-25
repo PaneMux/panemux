@@ -48,14 +48,22 @@ PaneMux.Undo = (() => {
     }
   }
 
-  // ---- text objects: several hides, or innerHTML changes, as one step ----------
+  // ---- text objects: several hides, or content changes, as one step ----------
   //   hides  { items: [{ desc, value, priority }] }     dap, dah
-  //   html   { items: [{ desc, before, after }] }       dip, cit
-  const itemEls = new Map(); // node id -> [WeakRef(element)] in item order
+  //   html   { items: [{ desc }] }                      dip, cit
+  // Content changes keep copies of the element's child nodes here in the page
+  // (never page markup as strings in the worker); a reload undoes them anyway.
+  const itemEls = new Map();   // node id -> [WeakRef(element)] in item order
+  const snapshots = new Map(); // node id -> [{ before: Node[], after: Node[] }]
 
-  async function record(kind, label, data, els) {
+  const copyChildren = (el) => [...el.childNodes].map((n) => n.cloneNode(true));
+
+  async function record(kind, label, data, els, snaps = null) {
     const r = await bg({ type: "undo.push", kind, label, data });
-    if (r) itemEls.set(r.id, els.map((el) => new WeakRef(el)));
+    if (r) {
+      itemEls.set(r.id, els.map((el) => new WeakRef(el)));
+      if (snaps) snapshots.set(r.id, snaps);
+    }
     return r && r.id;
   }
 
@@ -70,9 +78,11 @@ PaneMux.Undo = (() => {
   function applyItems(node, dir) {
     const els = itemTargets(node);
     if (els.some((el) => !el)) throw new Error(`element for "${node.label}" not found on this page`);
+    const snaps = snapshots.get(node.id);
+    if (node.kind === "html" && !snaps) throw new Error(`"${node.label}" went away when the page reloaded`);
     node.data.items.forEach((item, i) => {
       if (node.kind === "hides") setHidden(els[i], dir === "redo", item);
-      else els[i].innerHTML = dir === "undo" ? item.before : item.after;
+      else els[i].replaceChildren(...snaps[i][dir === "undo" ? "before" : "after"].map((n) => n.cloneNode(true)));
     });
     els[0].scrollIntoView({ block: "nearest" });
   }
@@ -185,5 +195,5 @@ PaneMux.Undo = (() => {
   PaneMux.Settings.ready.then(applyUKey);
   PaneMux.Settings.onChange(applyUKey);
 
-  return { recordHide, setHidden, record, toast: undoToast };
+  return { recordHide, setHidden, record, copyChildren, toast: undoToast };
 })();

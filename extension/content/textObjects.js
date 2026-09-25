@@ -185,9 +185,9 @@ PaneMux.TextObjects = (() => {
       return;
     }
     // di*: empty it out (the box stays)
-    const changes = t.els.map((el) => ({ el, before: el.innerHTML }));
-    changes.forEach(({ el }) => { el.innerHTML = ""; });
-    const id = await PaneMux.Undo.record("html", `clear ${label}`, { items: changes.map(({ el, before }) => ({ desc: Sel.descriptor(el), before, after: "" })) }, t.els);
+    const snaps = t.els.map((el) => ({ before: PaneMux.Undo.copyChildren(el), after: [] }));
+    t.els.forEach((el) => el.replaceChildren());
+    const id = await PaneMux.Undo.record("html", `clear ${label}`, { items: t.els.map((el) => ({ desc: Sel.descriptor(el) })) }, t.els, snaps);
     undoToast(`Cleared ${label}`, id);
   }
 
@@ -206,7 +206,8 @@ PaneMux.TextObjects = (() => {
       field.select && field.select();
       return;
     }
-    const before = el.innerHTML;
+    const before = PaneMux.Undo.copyChildren(el);
+    const beforeMarkup = el.innerHTML; // only to tell whether anything changed
     const hadAttr = el.getAttribute("contenteditable");
     el.setAttribute("contenteditable", "true");
     el.focus({ preventScroll: true });
@@ -222,10 +223,10 @@ PaneMux.TextObjects = (() => {
       if (hadAttr === null) el.removeAttribute("contenteditable");
       else el.setAttribute("contenteditable", hadAttr);
       getSelection().removeAllRanges();
-      const after = el.innerHTML;
-      if (after === before) return;
+      if (el.innerHTML === beforeMarkup) return;
       const label = `${t.name} ${Sel.describe(el)}`;
-      const id = await PaneMux.Undo.record("html", `edit ${label}`, { items: [{ desc: Sel.descriptor(el), before, after }] }, [el]);
+      const snaps = [{ before, after: PaneMux.Undo.copyChildren(el) }];
+      const id = await PaneMux.Undo.record("html", `edit ${label}`, { items: [{ desc: Sel.descriptor(el) }] }, [el], snaps);
       undoToast(`Edited ${label}`, id);
     };
     el.addEventListener("focusout", finish);
