@@ -6,6 +6,22 @@
   const $ = (id) => document.getElementById(id);
   const kbd = (k) => `<kbd>${k}</kbd>`;
 
+  // Lesson text is written with <kbd>/<b> for readability; turn it into
+  // elements (text only, no markup parsing).
+  function rich(el, str) {
+    el.textContent = "";
+    let last = 0;
+    for (const m of str.matchAll(/<(kbd|b)>(.*?)<\/\1>/g)) {
+      if (m.index > last) el.append(str.slice(last, m.index));
+      const node = document.createElement(m[1]);
+      node.textContent = m[2];
+      el.appendChild(node);
+      last = m.index + m[0].length;
+    }
+    if (last < str.length) el.append(str.slice(last));
+    return el;
+  }
+
   // goals: [id, keys shown as keycaps, caption]. setup(next, mark) marks goals
   // as they happen and calls next() when the lesson is complete.
   const STEPS = [
@@ -158,8 +174,11 @@
     card.dataset.step = String(i + 1);
     $("step-count").textContent = `Lesson ${i + 1} of ${STEPS.length}`;
     $("step-title").textContent = s.title;
-    $("step-text").innerHTML = s.text;
-    $("step-try").innerHTML = `<span class="try-label">Try it</span> ${s.try}`;
+    rich($("step-text"), s.text);
+    const label = document.createElement("span");
+    label.className = "try-label";
+    label.textContent = "Try it";
+    rich($("step-try"), ` ${s.try}`).prepend(label);
     $("step-done").hidden = true;
     renderGoals(s);
     spotlight(s.spotlight);
@@ -197,7 +216,7 @@
     card.classList.add("passed", "finished");
     $("step-count").textContent = "All done";
     $("step-title").textContent = "You're set";
-    $("step-text").innerHTML = `That's everything you need for day one. Press ${kbd("?")} anytime to see more.`;
+    rich($("step-text"), `That's everything you need for day one. Press ${kbd("?")} anytime to see more.`);
     $("step-try").textContent = "";
     $("step-done").hidden = true;
     $("goals").textContent = "";

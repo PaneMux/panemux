@@ -16,7 +16,9 @@ PaneMux.SiteAccess = (() => {
     box.hidden = true;
     box.setAttribute("role", "alert");
     const text = document.createElement("div");
-    text.innerHTML = "<b>PaneMux can't reach any websites yet.</b> Your browser is holding back its access, so keys won't do anything on pages.";
+    const b = document.createElement("b");
+    b.textContent = "PaneMux can't reach any websites yet.";
+    text.append(b, " Your browser is holding back its access, so keys won't do anything on pages.");
     const btn = document.createElement("button");
     btn.type = "button";
     btn.id = "grant-access";

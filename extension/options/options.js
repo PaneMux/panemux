@@ -44,8 +44,9 @@ function renderPresets() {
     const label = document.createElement("label");
     label.dataset.search = `${f.label} ${f.desc}`.toLowerCase();
     const text = document.createElement("span");
-    text.innerHTML = `${f.label}<small></small>`;
-    text.querySelector("small").textContent = f.desc;
+    const small = document.createElement("small");
+    small.textContent = f.desc;
+    text.append(f.label, small);
     const cb = document.createElement("input");
     cb.type = "checkbox";
     cb.id = `feature-${f.id}`;
