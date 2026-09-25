@@ -1,0 +1,125 @@
+# Builds the Chrome and Firefox packages on every push and pull request.
+#
+#   every run         packages uploaded as workflow artifacts (Actions tab, needs a GitHub login)
+#   push to main      the "nightly" pre-release is replaced with fresh zips (public download link)
+#   tag vX.Y.Z        a release with the zips attached; the tag must match manifest.json's version
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:unit
+      - run: npm run build
+
+      - name: Read the version
+        id: version
+        run: echo "version=$(node -p "require('./extension/manifest.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Check the tag matches manifest.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          if [ "v${{ steps.version.outputs.version }}" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME doesn't match manifest.json version ${{ steps.version.outputs.version }}"
+            exit 1
+          fi
+
+      # Unpacked folders: download, unzip, and load the folder directly.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: panemux-chrome-${{ steps.version.outputs.version }}
+          path: dist/chrome/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: panemux-firefox-${{ steps.version.outputs.version }}
+          path: dist/firefox/
+      # The zips as built, for the release jobs.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-zips
+          path: dist/*.zip
+          retention-days: 7
+
+  e2e:
+    # Real key presses against the loaded extension in Chromium and Firefox.
+    # Not required for the downloads: a flaky runner shouldn't hold a release.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium firefox
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 7
+
+  nightly:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-zips
+          path: dist
+      - name: Replace the nightly pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          sed -e "s/{{VERSION}}/$VERSION/g" -e "s/{{KIND}}/Nightly build of main (${GITHUB_SHA::7})/" .github/release-notes.md > notes.md
+          gh release delete nightly --yes --cleanup-tag || true
+          gh release create nightly dist/*.zip --prerelease --target "$GITHUB_SHA" \
+            --title "Nightly (${VERSION}, ${GITHUB_SHA::7})" --notes-file notes.md
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-zips
+          path: dist
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          sed -e "s/{{VERSION}}/$VERSION/g" -e "s/{{KIND}}/PaneMux $VERSION/" .github/release-notes.md > notes.md
+          gh release create "$GITHUB_REF_NAME" dist/*.zip --title "PaneMux $VERSION" --notes-file notes.md --verify-tag
