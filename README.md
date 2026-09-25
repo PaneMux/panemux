@@ -12,13 +12,16 @@ No backend, no network calls, no AI: everything runs locally on plain DOM work a
 - **Tab registers** — yank a set of tabs into `"a`, reopen them later, synced across your devices
 - **Undo tree** — closed tabs, hidden elements and form edits, with `u` / `Ctrl-r` / `g-` / `g+` and a clickable tree panel
 - **Splits** — two real windows tiled side by side, with `W h/j/k/l` to move between them
+- **Text objects** — `yap` copies the paragraph you're reading as Markdown, `dah` hides a whole heading's section, `cit` edits text right on the page
+- **Outline** — `gO` opens a foldable outline of the page's headings; walk it with `j`/`k` and the page follows
+- **Vimgolf** — `:golf` scores your keystrokes against the mouse clicks they save, with a leaderboard
 - **Quiet, readable HUD** — a slim status strip for the current mode, soft dark panels, nothing that ever blocks a click
 - **Gentle on day one** — starts in a Classic preset with just the essentials, a two-minute interactive tutorial, `?` for help, and a toolbar button to pause it on any site
 
 The feature spec and roadmap live in [`panemux-spec.md`](panemux-spec.md). Visuals follow
 [`panemux-design-system.md`](panemux-design-system.md); onboarding, defaults and safety follow
-[`panemux-ux-guidelines.md`](panemux-ux-guidelines.md). Phases 1–4 and the design/UX pass are built;
-phase 5 (text objects, Vimgolf mode, minimap) is next.
+[`panemux-ux-guidelines.md`](panemux-ux-guidelines.md). Every phase on the roadmap is built, including
+Firefox support.
 
 ## Install
 
@@ -64,7 +67,7 @@ That writes one package per browser family:
 | Preset | What's on |
 |---|---|
 | **Classic** (default) | Scrolling, link hints, find, back/forward, tabs, marks, copying the URL, help |
-| **Power User** | Everything: Visual mode, the command bar, macros, tab registers, undo history, splits, keystroke trail |
+| **Power User** | Everything: Visual mode, the command bar, text objects, the outline, macros, tab registers, undo history, splits, Vimgolf, keystroke trail |
 | **Custom** | Classic plus whichever features you tick |
 
 Switch presets at the top of Settings. Keys for features that are off aren't bound at all, so they reach the page.
@@ -100,6 +103,8 @@ right now. Any key can be changed (or switched off) in Settings, with "Reset to 
 | `T`, `"{a-z}p` | Tab overview, reopen a tab register |
 | `u`, `Ctrl-r`, `g-` / `g+`, `U` | Undo, redo, walk history across branches, undo-tree panel |
 | `Wh` `Wj` `Wk` `Wl`, `Ww`, `Wc` | Focus split left/down/up/right, next window, close split |
+| `gO` | Outline of the page's headings |
+| `{d,y,c}{a,i}{object}` | Text objects: `dap`, `yip`, `cit`, `2yat`… (see below) |
 
 In Power User, `u` is undo. If you'd rather keep Vimium's half-page up, change "What u does" in Settings.
 
@@ -120,6 +125,8 @@ highlighted match, so `:tbdo close x` works.
 | `:g/regex/<action>`, `:g!/regex/<action>` | Tabs whose title/URL match (or don't) |
 | `:sp [url]`, `:vsp [url]`, `:close` | Split horizontally / vertically, close a split |
 | `:reg`, `:macros`, `:undotree` | Show registers, macros, toggle the undo tree |
+| `:outline` | Outline of the page's headings (same as `gO`) |
+| `:golf`, `:golf board`, `:golf clear` | Start / finish a Vimgolf round, show the leaderboard, clear it |
 
 Actions: `close reload pin unpin mute unmute duplicate discard`.
 
@@ -133,7 +140,48 @@ Actions: `close reload pin unpin mute unmute duplicate discard`.
 | `y` | Copy as Markdown |
 | `>` | Open in a reading pane |
 | `f` | Pick a different element with hints |
+| `c` | Edit the element's text in place |
+| `a{object}` / `i{object}` | Select a text object around the selection; again to grow it |
 | `Esc` / `v` | Leave Visual mode |
+
+### Text objects
+
+Vim's text objects, aimed at the page instead of a buffer. The "cursor" is where you're reading: the find
+match (`/`), the text you selected, the last thing you clicked or focused, or whatever sits in the middle
+of the screen.
+
+| Operator | `a` (around) | `i` (inner) |
+|---|---|---|
+| `y` copy | as Markdown | the plain text |
+| `d` delete | hide it (soft, undoable) | empty it out, keep the box |
+| `c` change | edit it in place: type over it, `Esc` to finish | same |
+
+| Object | Finds the nearest… |
+|---|---|
+| `p` | paragraph: `p`, `li`, `pre`, `blockquote`, a heading, a table cell… or any block holding text |
+| `s` | section: `section`, `article`, `main`, `aside`, `nav`, `header`, `footer`, `details`, `form` |
+| `t` | element itself (`2yat` is its parent) |
+| `l` / `r` / `T` | list / table row / table |
+| `h` | heading plus everything under it, up to the next heading at its level (`ih` leaves the heading out) |
+
+Everything goes through the undo tree: `u` puts it back. `d` on its own still scrolls half a page at
+once; if `a` or `i` follows, the scroll is taken back.
+
+### Outline (`gO`)
+
+`j`/`k` walk the headings and the page follows, `Enter` stays there, `Esc` goes back to where you were,
+`h`/`l` fold and unfold, `gg`/`G` first and last. `p` pins it: it stays open while you read, marks the
+section you're in, folds down to a slim tab from its header, and `gO` focuses it again. Click a heading
+to jump.
+
+### Vimgolf
+
+`:golf` starts a round and shows a scorecard in the corner. Every key PaneMux handles is a stroke; every
+command adds its *par*, an estimate of the mouse actions the same thing takes (aim and click a link: 2,
+flick the wheel: 1, pin three tabs by hand: 7, copy a paragraph as Markdown: 6, and so on). Replaying a
+macro scores the par of everything it does for the two keys `@a` cost. `:golf` again ends the round and
+ranks it on a local leaderboard (`:golf board`); switch on "Sync the leaderboard" in Settings to share it
+between your own devices.
 
 ### Tab overview (`T`)
 
@@ -145,6 +193,11 @@ Actions: `close reload pin unpin mute unmute duplicate discard`.
 **Key handling** is one finite-state machine (`extension/content/keyHandler.js`) with Vim's grammar:
 `[count] [operator [count]] (motion | text-object | action) [char]`. Bindings live in a trie per mode,
 and a key that's both a full binding and a prefix waits a moment before firing, like Vim's `timeoutlen`.
+Commands that can take themselves back don't wait: `d` scrolls at once, and is reverted if `dap` completes.
+
+**Firefox** gets its own build from the same source (`npm run build` → `dist/firefox/`). The background
+module runs as an event page there instead of a service worker; everything else is shared, using
+`chrome.*`, which Firefox supports.
 
 **Macros** record what happened, not just which keys were hit: hint clicks are stored as a stable
 element descriptor (CSS path, href, text), so replays still hit the right link when hint labels change.
@@ -171,7 +224,9 @@ Ctrl+W, so the window prefix is `W` instead of Vim's `Ctrl-w`.
 ## Limits
 
 - Runs in the top frame only, so keys don't work inside iframes yet.
-- Chrome doesn't let extensions run on `chrome://` pages or the New Tab page.
+- Chrome doesn't let extensions run on `chrome://` pages or the New Tab page; Firefox likewise keeps them
+  off `about:` pages and addons.mozilla.org.
+- Vimgolf's par is an estimate, not a measurement. It's there to make you notice what the keys save.
 - Scripts inject at `document_idle`, so keys pressed before a page finishes loading go to the page.
 - Mouse clicks aren't recorded in macros.
 - The status strip can't truly shrink the browser viewport (extensions can't). While you're mid-page it
@@ -182,8 +237,9 @@ Ctrl+W, so the window prefix is `W` instead of Vim's `Ctrl-w`.
 
 ```sh
 npm install
-npx playwright install chromium
-npm test                  # unit tests (node:test) + end-to-end tests with the extension loaded
+npx playwright install chromium firefox
+npm test                  # unit tests + end-to-end tests in Chromium and Firefox
+npm run test:firefox      # just the Firefox run
 HEADED=1 npm run test:e2e # watch it drive a real browser
 npm run build
 ```

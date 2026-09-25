@@ -162,7 +162,8 @@ aren't bound at all, so they reach the page untouched.
 extension/
   manifest.json
   background/
-    background.js         // service worker: message router, tabs, global marks
+    background.js         // service worker (Chrome) / event page (Firefox): message router, tabs, global marks
+    vimgolf.js             // the round in progress + leaderboard
     commandRegistry.js     // ex-command name -> handler map (fuzzy-matched in the page)
     registers.js           // named registers: text + tab groups (synced in <8KB chunks)
     macroRecorder.js        // record/replay steps across tabs and page loads
@@ -180,12 +181,14 @@ extension/
     commands.js, scroll.js, linkHints.js, find.js, marks.js
     domSelector.js, markdown.js, visualMode.js
     macro.js, tabOverview.js, undo.js, nudges.js
-    textObjects.js, vimgolf.js      // Phase 5
+    textObjects.js, vimgolf.js      // Phase 5: dap / yip / cit, :golf scoring
   ui/
     tokens.css              // design tokens (single source of truth)
     hud.css, hud.js          // HUD shadow root, toasts, scanlines
     modeIndicator.js         // status strip / corner pill
     keystrokeTrail.js, commandPalette.js, preview.js, help.js, undoPanel.js
+    minimap.js               // gO: outline of the page's headings
+    siteAccess.js            // "can't reach websites" banner (Firefox)
   tutorial/                 // first-run interactive tutorial
   options/                  // presets, searchable keys, settings
   icons/
@@ -206,7 +209,8 @@ Storage notes: `chrome.storage.sync` caps out around 100KB total / ~8KB per item
 | 3 | Macros + Tab registers | done |
 | 4 | Undo tree + Splits | done |
 | 4.5 | Design system + UX pass: new HUD look and status strip, keystroke trail, opt-in scanlines, Classic / Power User / Custom presets, first-run tutorial, auto-passthrough, toolbar on/off/pause, `?` help, close previews + undo toasts, mode hints, settings rebuild | done |
-| 5 | Text objects + Vimgolf mode + minimap | next |
+| 5 | Text objects + Vimgolf mode + minimap | done |
+| 5.5 | Firefox (and its forks): a Firefox build from the same source, Firefox end-to-end tests | done |
 
 Phase 4.5 was slotted in after Phase 4 so the UX floor (safe defaults, onboarding, escape hatches) exists
 before more power features land. It pulled the keystroke trail and the scanline toggle forward from
