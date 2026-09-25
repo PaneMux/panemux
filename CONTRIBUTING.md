@@ -31,6 +31,14 @@ request, and runs the end-to-end suites in Chromium and Firefox alongside. Pushe
 `package.json`, commit, then tag it: `git tag v0.6.0 && git push origin v0.6.0`. The workflow refuses a
 tag that doesn't match the manifest.
 
+## Publishing to addons.mozilla.org
+
+`npm run package:amo` builds `dist/panemux-firefox-<version>.zip` and runs Mozilla's addons-linter on it
+(warnings count as failures, since reviewers read them). Upload that zip in the AMO developer hub; the
+listing text, reviewer notes, privacy policy and screenshots are in `store/amo/`. Regenerate the
+screenshots with `npm run screenshots` (needs `node tests/server.mjs` running) when the HUD changes.
+Each new version needs a higher `version`; AMO won't take the same one twice.
+
 ## Where things live
 
 - `extension/content/keyHandler.js` — the key state machine. New keys go through `PaneMux.Keys.defineCommand`
